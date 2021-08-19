@@ -1,21 +1,32 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react'
+import { StatusBar } from 'expo-status-bar'
+import { SplashLoader } from './src/components/components'
+import { enableScreens } from 'react-native-screens'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import * as Updates from 'expo-updates'
+import Constants from 'expo-constants'
+import { BottomNavigation } from './src/navigations/navigations'
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+enableScreens()
+
+async function checkUpdates() {
+	const { isAvailable } = await Updates.checkForUpdateAsync()
+
+	if (isAvailable) {
+		await Updates.fetchUpdateAsync()
+		Updates.reloadAsync()
+	}
+}
+if (!Constants?.manifest?.packagerOpts?.dev) {
+	checkUpdates()
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+	return (
+		<SafeAreaProvider>
+			{/* <SplashLoader /> */}
+			<BottomNavigation />
+			<StatusBar />
+		</SafeAreaProvider>
+	)
+}
