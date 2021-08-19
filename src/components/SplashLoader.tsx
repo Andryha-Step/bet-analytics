@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react-lite'
 import { ProgressBar } from 'react-native-paper'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { setStatusBarStyle, setStatusBarBackgroundColor } from 'expo-status-bar'
+import { setStatusBarStyle } from 'expo-status-bar'
 
 import styled from 'styled-components/native'
 
@@ -11,11 +11,6 @@ interface Props {}
 export const SplashLoader = observer(({}: Props) => {
 	React.useEffect(() => {
 		setStatusBarStyle('dark')
-
-		return () => {
-			setStatusBarStyle('light')
-			setStatusBarBackgroundColor('#1e1e1f', true)
-		}
 	}, [])
 
 	return (

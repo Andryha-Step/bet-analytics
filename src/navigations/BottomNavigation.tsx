@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite'
 import { BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Bookmakers, Feed, News, Profile } from '../screens/screens'
 import { NavigationContainer } from '@react-navigation/native'
+import { setStatusBarStyle, setStatusBarBackgroundColor } from 'expo-status-bar'
 
 import styled from 'styled-components/native'
 
@@ -18,7 +19,17 @@ export const BottomNavigation = observer(({}: Props) => {
 		tabBarIconStyle: {
 			marginTop: 2,
 		},
+		tabBarStyle: {
+			borderWidth: 0,
+			borderTopColor: '#1B1C21',
+			height: 48,
+		},
 	}
+
+	React.useEffect(() => {
+		setStatusBarStyle('light')
+		setStatusBarBackgroundColor('#1B1C21', true)
+	}, [])
 
 	return (
 		<NavigationContainer>
