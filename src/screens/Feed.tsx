@@ -6,10 +6,13 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import styled from 'styled-components/native'
 import { ScreenHeader } from '../components/components'
 import { FeedNavigation } from '../navigations/FeedNavigation'
+import { Left } from './Feed/Left'
 
 interface Props {}
 
 export const Feed = observer(({}: Props) => {
+	const [side, setSide] = React.useState<'left' | 'right'>()
+
 	return (
 		<SafeAreaView>
 			<Container>
@@ -18,7 +21,8 @@ export const Feed = observer(({}: Props) => {
 						<Logo source={require('../icons/navigations/logo.png')} />
 					</LogoContainer>
 				</ScreenHeader>
-				<FeedNavigation />
+				<FeedNavigation sideValue={side => setSide(side)} />
+				{side === 'left' ? <Left /> : null}
 			</Container>
 		</SafeAreaView>
 	)
@@ -38,4 +42,7 @@ const LogoContainer = styled.View`
 const Logo = styled.Image`
 	width: 61px;
 	height: 28px;
+`
+const Text = styled.Text`
+	color: red;
 `

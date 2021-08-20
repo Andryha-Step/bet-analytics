@@ -26,11 +26,6 @@ export const BottomNavigation = observer(({}: Props) => {
 		},
 	}
 
-	React.useEffect(() => {
-		setStatusBarStyle('light')
-		setStatusBarBackgroundColor('#1B1C21', true)
-	}, [])
-
 	return (
 		<NavigationContainer>
 			<Tab.Navigator

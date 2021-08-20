@@ -3,18 +3,30 @@ import { observer } from 'mobx-react-lite'
 
 import styled from 'styled-components/native'
 
-interface Props {}
+type Side = 'left' | 'right'
+interface Props {
+	sideValue: (side: Side) => any
+}
 
-export const FeedNavigation = observer(({}: Props) => {
-	const [side, setSide] = React.useState<'left' | 'right'>('left')
+export const FeedNavigation = observer(({ sideValue }: Props) => {
+	const [side, setSide] = React.useState<Side>('left')
+
+	const changeSideHandler = (value: Side) => {
+		sideValue(value)
+		setSide(value)
+	}
+
+	React.useEffect(() => {
+		changeSideHandler('left')
+	}, [])
 
 	return (
 		<Container>
-			<Button activeOpacity={0.8} onPress={() => setSide('left')}>
+			<Button activeOpacity={0.8} onPress={() => changeSideHandler('left')}>
 				<Label active={side === 'left'}>Текущие</Label>
 				<ActiveLine active={side === 'left'} />
 			</Button>
-			<Button activeOpacity={0.8} onPress={() => setSide('right')}>
+			<Button activeOpacity={0.8} onPress={() => changeSideHandler('right')}>
 				<Label active={side === 'right'}>Завершенные</Label>
 				<ActiveLine active={side === 'right'} />
 			</Button>
