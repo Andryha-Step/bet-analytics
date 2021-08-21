@@ -11,6 +11,7 @@ import { BottomNavigation } from './src/navigations/BottomNavigation'
 import { observer } from 'mobx-react-lite'
 import API from './src/store/api'
 import forecasts from './src/store/forecasts'
+import 'moment/locale/ru'
 
 enableScreens()
 // LogBox.ignoreAllLogs()

@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react-lite'
 
 import styled from 'styled-components/native'
-import { Card } from '../../components/components'
+import { Card, SubscribeCard } from '../../components/components'
 
 interface Props {}
 
@@ -11,9 +11,7 @@ export const Left = observer(({}: Props) => {
 		<ScrollView>
 			<Container>
 				<Card />
-				<Card />
-				<Card />
-				<Card />
+				<SubscribeCard />
 				<Card />
 			</Container>
 		</ScrollView>

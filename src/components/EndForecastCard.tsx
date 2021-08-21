@@ -4,12 +4,13 @@ import { observer } from 'mobx-react-lite'
 import styled from 'styled-components/native'
 import Svg, { Circle, Path } from 'react-native-svg'
 import colors from '../constants/colors'
+import { Daum } from '../store/forecasts'
 
 interface Props {
-	headerType?: ''
+	forecast: Daum
 }
 
-export const Card = observer(({}: Props) => {
+export const EndForecastCard = observer(({ forecast }: Props) => {
 	return (
 		<Container activeOpacity={1}>
 			<CapContainer>
@@ -26,7 +27,7 @@ export const Card = observer(({}: Props) => {
 				</DateContainer>
 				<ConfrontationContainer>
 					<ConfrontationLeft>
-						<CommandIcon source={require('../icons/commands/test-1.png')} />
+						<CommandIcon source={{ uri: forecast.events[0].team_1_logo }} />
 					</ConfrontationLeft>
 					<ConfrontationCentral>
 						<BallIcon source={require('../icons/ball-football.png')} />
@@ -34,7 +35,7 @@ export const Card = observer(({}: Props) => {
 						<CommandNames>Европа. Лига Наций УЕФА</CommandNames>
 					</ConfrontationCentral>
 					<ConfrontationRight>
-						<CommandIcon source={require('../icons/commands/test-2.png')} />
+						<CommandIcon source={{ uri: forecast.events[0].team_2_logo }} />
 					</ConfrontationRight>
 				</ConfrontationContainer>
 				<CommandNamesContainer>
@@ -50,7 +51,7 @@ export const Card = observer(({}: Props) => {
 					<CoefRight>
 						<RightPanel />
 						<CoefTitle>СТАВКА</CoefTitle>
-						<CoefData>П1</CoefData>
+						<CoefData>{forecast.events[0].result}</CoefData>
 					</CoefRight>
 				</CoefContainer>
 			</Body>

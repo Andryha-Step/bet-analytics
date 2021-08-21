@@ -7,6 +7,7 @@ import styled from 'styled-components/native'
 import { ScreenHeader } from '../components/components'
 import { FeedNavigation } from '../navigations/FeedNavigation'
 import { Left } from './Feed/Left'
+import { Right } from './Feed/Right'
 
 interface Props {}
 
@@ -23,6 +24,7 @@ export const Feed = observer(({}: Props) => {
 				</ScreenHeader>
 				<FeedNavigation sideValue={side => setSide(side)} />
 				{side === 'left' ? <Left /> : null}
+				{side === 'right' ? <Right /> : null}
 			</Container>
 		</SafeAreaView>
 	)
