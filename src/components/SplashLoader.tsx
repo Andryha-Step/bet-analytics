@@ -17,7 +17,7 @@ export const SplashLoader = observer(({}: Props) => {
 		<>
 			<SplashImage source={require('../../assets/splash.png')} />
 			<SafeView>
-				<Progress progress={0.5} color="#2e38e4" />
+				<Progress indeterminate color="#2e38e4" />
 			</SafeView>
 		</>
 	)

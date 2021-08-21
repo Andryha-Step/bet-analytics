@@ -1,4 +1,5 @@
 import React from 'react'
+import { LogBox } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { SplashLoader } from './src/components/components'
 import { enableScreens } from 'react-native-screens'
@@ -7,10 +8,12 @@ import * as Updates from 'expo-updates'
 import Constants from 'expo-constants'
 import { useFonts } from 'expo-font'
 import { BottomNavigation } from './src/navigations/BottomNavigation'
-import { auth } from './src/state/api'
-import { ApisauceInstance } from 'apisauce'
+import { observer } from 'mobx-react-lite'
+import API from './src/store/api'
+import forecasts from './src/store/forecasts'
 
 enableScreens()
+// LogBox.ignoreAllLogs()
 
 async function checkUpdates() {
 	const { isAvailable } = await Updates.checkForUpdateAsync()
@@ -24,97 +27,7 @@ if (!Constants?.manifest?.packagerOpts?.dev) {
 	checkUpdates()
 }
 
-interface Forecasts {
-	current_page: number
-	data: Array<{
-		id: number
-		type: 'single' | string
-		subscribe_type: 'free' | string
-		status: null | any
-		parent_id: null | any
-		is_fake: number
-		show_in_archive: boolean
-		released_at: string
-		coefficient: number
-		recommended_stake: null | any
-		our_forecast: string
-		created_at: string
-		updated_at: string
-		events: Array<{
-			id: number
-			forecast_id: number
-			sport_id: number
-			league: string
-			team_1_name: string
-			team_2_name: string
-			released_at: string
-			history: Array<{
-				date: string
-				teams: string
-				result: string
-			}>
-			last_game_team_1: Array<{
-				date: string
-				teams: string
-				result: string
-			}>
-			last_game_team_2: Array<{
-				date: string
-				teams: string
-				result: string
-			}>
-			result: string
-			coefficient: number
-			recommended_stake: null | any
-			our_forecast: null | any
-			created_at: string
-			updated_at: string
-			team_1_logo: string
-			team_2_logo: string
-			media: Array<{
-				id: number
-				model_type: string
-				model_id: number
-				uuid: string
-				collection_name: string
-				name: string
-				file_name: string
-				mime_type: string
-				disk: string
-				conversions_disk: string
-				size: number
-				manipulations: []
-				custom_properties: []
-				generated_conversions: {
-					small: true
-				}
-				responsive_images: []
-				order_column: number
-				created_at: string
-				updated_at: string
-			}>
-		}>
-	}>
-	first_page_url: string
-	from: number
-	last_page: number
-	last_page_url: string
-	links: Array<{
-		url: null
-		label: string
-		active: false
-	}>
-	next_page_url: null | string
-	path: string
-	per_page: number
-	prev_page_url: null | string
-	to: number
-	total: number
-}
-
-export default function App() {
-	const [api, setApi] = React.useState<ApisauceInstance>()
-	const [initialForecasts, setInitialForecasts] = React.useState<Forecasts>()
+const App = observer(() => {
 	const [fontsLoaded] = useFonts({
 		'Inter-Black': require('./src/fonts/inter/Inter-Black.ttf'),
 		'Inter-Bold': require('./src/fonts/inter/Inter-Bold.ttf'),
@@ -147,13 +60,12 @@ export default function App() {
 	})
 
 	React.useEffect(() => {
-		auth().then(response => {
-			setApi(response)
-			response.get('/api/app/forecasts').then(response => response)
-		})
+		API.login()
 	}, [])
 
-	if (!fontsLoaded && !api && !initialForecasts) return <SplashLoader />
+	if (!fontsLoaded || !API.token) return <SplashLoader />
+
+	// forecasts.getArchive().then(resp => console.log(resp))
 
 	return (
 		<SafeAreaProvider>
@@ -161,4 +73,6 @@ export default function App() {
 			<StatusBar backgroundColor="#1B1C21" style="light" />
 		</SafeAreaProvider>
 	)
-}
+})
+
+export default App

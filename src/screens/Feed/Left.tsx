@@ -14,6 +14,7 @@ export const Left = observer(({}: Props) => {
 				<Card />
 				<Card />
 				<Card />
+				<Card />
 			</Container>
 		</ScrollView>
 	)
