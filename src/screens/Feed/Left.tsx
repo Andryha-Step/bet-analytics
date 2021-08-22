@@ -2,17 +2,26 @@ import React from 'react'
 import { observer } from 'mobx-react-lite'
 
 import styled from 'styled-components/native'
-import { Card, SubscribeCard } from '../../components/components'
+import { ForecastCard, SubscribeCard } from '../../components/components'
+import forecasts from '../../store/forecasts'
 
 interface Props {}
 
 export const Left = observer(({}: Props) => {
+	React.useEffect(() => {
+		forecasts.getForecasts()
+	}, [])
+
 	return (
 		<ScrollView>
 			<Container>
-				<Card />
+				{forecasts.forecasts?.data.length ? <ForecastCard forecast={forecasts.forecasts.data[0]} /> : null}
 				<SubscribeCard />
-				<Card />
+				{forecasts.forecasts?.data.length
+					? forecasts.forecasts?.data.map((forecast, index) => {
+							if (index) return <ForecastCard key={forecast.id} forecast={forecast} />
+					  })
+					: null}
 			</Container>
 		</ScrollView>
 	)

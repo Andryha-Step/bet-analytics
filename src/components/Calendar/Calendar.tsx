@@ -4,11 +4,15 @@ import { observer } from 'mobx-react-lite'
 import styled from 'styled-components/native'
 import CalendarStrip from 'react-native-calendar-strip'
 import moment from 'moment'
-import month from './calendar.state'
+import state from './calendar.state'
 
 interface Props {}
 
 export const Calendar = observer(({}: Props) => {
+	React.useEffect(() => {
+		state.setSelectedDate(moment().toISOString())
+	}, [])
+
 	return (
 		<Container>
 			<MonthContainer>
@@ -18,6 +22,7 @@ export const Calendar = observer(({}: Props) => {
 				<CalendarStrip
 					onDateSelected={date => {
 						// console.log(date)
+						state.setSelectedDate(date.toISOString())
 					}}
 					scrollable
 					style={{ height: 53, borderWidth: 0 }}
@@ -35,7 +40,7 @@ export const Calendar = observer(({}: Props) => {
 					iconStyle={{ display: 'none' }}
 					selectedDate={moment()}
 					onWeekChanged={e => {
-						month.setName(moment(e).format('MMMM'))
+						state.setName(moment(e).format('MMMM'))
 					}}
 					datesWhitelist={[
 						{
@@ -51,7 +56,7 @@ export const Calendar = observer(({}: Props) => {
 })
 
 const MonthValue = observer(() => {
-	return <MonthText>{month.name.toUpperCase()}</MonthText>
+	return <MonthText>{state.name.toUpperCase()}</MonthText>
 })
 
 const Container = styled.View`

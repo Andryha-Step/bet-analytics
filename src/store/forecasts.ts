@@ -3,24 +3,84 @@ import API from './api'
 
 export interface ForecastsRequest {
 	current_page: number
-	data: any[]
+	data: Daum2[]
 	first_page_url: string
-	from: any
+	from: number
 	last_page: number
 	last_page_url: string
-	links: ForecastsRequestLink[]
+	links: Link[]
 	next_page_url: any
 	path: string
 	per_page: number
 	prev_page_url: any
-	to: any
+	to: number
 	total: number
 }
 
-export interface ForecastsRequestLink {
-	url?: string
-	label: string
-	active: boolean
+export interface Daum2 {
+	id: number
+	type: string
+	subscribe_type: string
+	status: any
+	parent_id: any
+	is_fake: number
+	show_in_archive: boolean
+	released_at: string
+	coefficient: number
+	recommended_stake: any
+	our_forecast: string
+	created_at: string
+	updated_at: string
+	events: Event2[]
+}
+
+export interface Event2 {
+	id: number
+	forecast_id: number
+	sport_id: number
+	league: string
+	team_1_name: string
+	team_2_name: string
+	released_at: string
+	history: History2[]
+	last_game_team_1: any[]
+	last_game_team_2: any[]
+	result: string
+	coefficient: number
+	recommended_stake: any
+	our_forecast: any
+	created_at: string
+	updated_at: string
+	team_1_logo: string
+	team_2_logo: string
+	media: Medum2[]
+}
+
+export interface History2 {
+	date: string
+	teams: string
+	result: string
+}
+
+export interface Medum2 {
+	id: number
+	model_type: string
+	model_id: number
+	uuid: string
+	collection_name: string
+	name: string
+	file_name: string
+	mime_type: string
+	disk: string
+	conversions_disk: string
+	size: number
+	manipulations: any[]
+	custom_properties: any[]
+	generated_conversions: GeneratedConversions
+	responsive_images: any[]
+	order_column: number
+	created_at: string
+	updated_at: string
 }
 
 export interface ArchiveRequest {
@@ -43,7 +103,7 @@ export interface Daum {
 	id: number
 	type: string
 	subscribe_type: string
-	status: string
+	status: 'passed' | 'failed' | 'returned'
 	parent_id?: number
 	is_fake: number
 	show_in_archive: boolean

@@ -11,7 +11,7 @@ interface Props {
 
 export const SubscribeCard = observer(({}: Props) => {
 	return (
-		<Container activeOpacity={0.9}>
+		<Container activeOpacity={1}>
 			<CapContainer>
 				<Cap color="#FFD058" />
 			</CapContainer>
@@ -37,15 +37,17 @@ const Container = styled.TouchableOpacity`
 const Cap = ({ color }: { color?: string }) => {
 	return (
 		<Svg preserveAspectRatio="none" width="100%" height="9" viewBox="0 0 300 9" fill="none">
-			<Circle r="1200" cx="150" cy="1200" fill={color || '#ff00ff'} />
+			<Circle r="1240" cx="150" cy="1240" fill={color || '#ff00ff'} />
 		</Svg>
 	)
 }
 const CapContainer = styled.View`
 	padding: 0 4px;
+	top: 0.2px;
 `
-const BottomCapContainer = styled(CapContainer)`
+const BottomCapContainer = styled.View`
 	position: absolute;
+	padding: 0 4px;
 	height: 9px;
 	width: 100%;
 	bottom: 0px;

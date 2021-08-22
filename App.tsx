@@ -12,6 +12,7 @@ import { observer } from 'mobx-react-lite'
 import API from './src/store/api'
 import forecasts from './src/store/forecasts'
 import 'moment/locale/ru'
+import colors from './src/constants/colors'
 
 enableScreens()
 // LogBox.ignoreAllLogs()
@@ -61,15 +62,17 @@ const App = observer(() => {
 	})
 
 	React.useEffect(() => {
-		API.login()
+		API.login().then(() => {
+			forecasts.getForecasts()
+		})
 	}, [])
 
-	if (!fontsLoaded || !API.token) return <SplashLoader />
+	if (!fontsLoaded || !API.token || !forecasts.forecasts) return <SplashLoader />
 
 	// forecasts.getArchive().then(resp => console.log(resp))
 
 	return (
-		<SafeAreaProvider>
+		<SafeAreaProvider style={{ backgroundColor: colors.background }}>
 			<BottomNavigation />
 			<StatusBar backgroundColor="#1B1C21" style="light" />
 		</SafeAreaProvider>
