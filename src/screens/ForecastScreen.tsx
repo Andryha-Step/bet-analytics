@@ -10,6 +10,7 @@ import Svg, { Path } from 'react-native-svg'
 import { useNavigation } from '@react-navigation/native'
 import colors from '../constants/colors'
 import moment from 'moment'
+import { ProgressBar } from 'react-native-paper'
 
 interface Props {
 	route: {
@@ -88,7 +89,7 @@ const DefaultForecast = ({ route }: Props) => {
 					<DefaultCentralView>
 						<DefaultCommandView>
 							<DefaultCommandImage source={{ uri: forecast.events[0].team_1_logo }} />
-							<DefaultCommandName>{forecast.events[0].team_1_name}</DefaultCommandName>
+							<DefaultCommandName style={{ textAlign: 'left' }}>{forecast.events[0].team_1_name}</DefaultCommandName>
 						</DefaultCommandView>
 						<TimerView>
 							<Time route={route} />
@@ -96,7 +97,7 @@ const DefaultForecast = ({ route }: Props) => {
 						</TimerView>
 						<DefaultCommandView style={{ alignItems: 'flex-end' }}>
 							<DefaultCommandImage source={{ uri: forecast.events[0].team_2_logo }} />
-							<DefaultCommandName>{forecast.events[0].team_2_name}</DefaultCommandName>
+							<DefaultCommandName style={{ textAlign: 'right' }}>{forecast.events[0].team_2_name}</DefaultCommandName>
 						</DefaultCommandView>
 					</DefaultCentralView>
 
@@ -176,7 +177,7 @@ const DefaultHeaderBody = styled.View`
 `
 const DefaultCentralView = styled.View`
 	flex-direction: row;
-	justify-content: space-between;
+	justify-content: center;
 `
 const DefaultCommandImage = styled.Image`
 	height: 84px;
@@ -184,6 +185,7 @@ const DefaultCommandImage = styled.Image`
 `
 const DefaultCommandView = styled.View`
 	flex-direction: column;
+	flex-grow: 1;
 `
 const DefaultCommandName = styled.Text`
 	color: #ffffff;
@@ -191,12 +193,13 @@ const DefaultCommandName = styled.Text`
 	margin-top: 16px;
 	font-family: Inter-SemiBold;
 	font-size: 16px;
-	width: 100%;
+	max-width: 90%;
 `
 const TimerView = styled.View`
 	justify-content: center;
 	align-items: center;
 	height: 84px;
+	position: absolute;
 `
 const Timer = styled.Text`
 	font-family: Poppins-SemiBold;
@@ -267,27 +270,64 @@ const CoefData = styled.Text`
 
 const MeetingStats = ({ route }: Props) => {
 	const { forecast } = route.params
+	const [percent, setPercent] = React.useState()
+
+	const computeProgressPercent = (): number => {
+		let percent = 0
+
+		forecast.events[0].history.forEach(result => {
+			const [leftRes, rightRes] = result.result.split(':')
+			const compNum = 100 / forecast.events[0].history.length
+
+			if (leftRes > rightRes) percent += compNum
+		})
+
+		return percent
+	}
+
 	return (
 		<MeetingStatsContainer>
 			<MeetingStatsTitle>Статистика встреч</MeetingStatsTitle>
 			<MeetingStatsBlock>
 				<MeetingStatsBlockHeader>
-					<MeetingStatsBlockTitle>
-						<MeetingStatsBlockCommand>
-							<MeetingStatsBlockCommandIcon source={{ uri: forecast.events[0].team_1_logo }} />
-							<MeetingStatsBlockCommandPercent>20%</MeetingStatsBlockCommandPercent>
-						</MeetingStatsBlockCommand>
-						<MeetingStatsBlockCommand>
-							<MeetingStatsBlockCommandPercent>80%</MeetingStatsBlockCommandPercent>
-							<MeetingStatsBlockCommandIcon source={{ uri: forecast.events[0].team_2_logo }} />
-						</MeetingStatsBlockCommand>
-					</MeetingStatsBlockTitle>
+					<MeetingStatsBlockTitleView>
+						<MeetingStatsBlockTitle>
+							<MeetingStatsBlockCommand>
+								<MeetingStatsBlockCommandIcon source={{ uri: forecast.events[0].team_1_logo }} />
+								<MeetingStatsBlockCommandPercent>{computeProgressPercent()}%</MeetingStatsBlockCommandPercent>
+							</MeetingStatsBlockCommand>
+							<MeetingStatsBlockCommand>
+								<MeetingStatsBlockCommandPercent>{100 - computeProgressPercent()}%</MeetingStatsBlockCommandPercent>
+								<MeetingStatsBlockCommandIcon source={{ uri: forecast.events[0].team_2_logo }} />
+							</MeetingStatsBlockCommand>
+						</MeetingStatsBlockTitle>
+					</MeetingStatsBlockTitleView>
+					<Progress progress={computeProgressPercent() / 100} color="#2e38e4" />
 				</MeetingStatsBlockHeader>
-				<MeetingStatsBlockBody></MeetingStatsBlockBody>
+				<MeetingStatsBlockBody>
+					{forecast.events[0].history.length
+						? forecast.events[0].history.map(event => {
+								return (
+									<MeetingStatsLineView key={event.date}>
+										<MeetingStatsLineDate>{event.date.split('-').slice(1).join('/')}</MeetingStatsLineDate>
+										<MeetingStatsLineCommands>{event.teams}</MeetingStatsLineCommands>
+										<MeetingStatsLineScore>{event.result}</MeetingStatsLineScore>
+									</MeetingStatsLineView>
+								)
+						  })
+						: null}
+				</MeetingStatsBlockBody>
 			</MeetingStatsBlock>
 		</MeetingStatsContainer>
 	)
 }
+
+const Progress = styled(ProgressBar)`
+	width: 100%;
+	height: 8px;
+	background-color: #313235;
+	margin-top: 14px;
+`
 
 const MeetingStatsContainer = styled.View`
 	padding: 0 16px;
@@ -313,6 +353,7 @@ const MeetingStatsBlockBody = styled.View`
 	background-color: #1b1c21;
 	padding: 16px;
 `
+const MeetingStatsBlockTitleView = styled.View``
 const MeetingStatsBlockTitle = styled.View`
 	flex-direction: row;
 	justify-content: space-between;
@@ -330,4 +371,26 @@ const MeetingStatsBlockCommandPercent = styled.Text`
 	font-size: 12px;
 	color: #ffffff;
 	margin: 0 8px;
+`
+const MeetingStatsLineView = styled.View`
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+`
+const MeetingStatsLineDate = styled.Text`
+	font-family: Inter-Regular;
+	font-size: 14px;
+	color: #8f919c;
+`
+const MeetingStatsLineCommands = styled.Text`
+	font-family: Inter-SemiBold;
+	font-size: 14px;
+	color: #ffffff;
+	text-align: center;
+	max-width: 80%;
+`
+const MeetingStatsLineScore = styled.Text`
+	font-family: Inter-Regular;
+	font-size: 14px;
+	color: #ffffff;
 `

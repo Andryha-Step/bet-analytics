@@ -74,10 +74,12 @@ export const EndForecastCard = observer(({ forecast }: Props) => {
 					<StatusTitleBg />
 					<StatusTitleText>{forecast.subscribe_type.toUpperCase()}</StatusTitleText>
 				</StatusTitle>
-				<ReturnTitleContainer>
-					<ReturnTitleSvg />
-					<ReturnTitleText>ВОЗВРАТ</ReturnTitleText>
-				</ReturnTitleContainer>
+				{forecast.status === 'returned' ? (
+					<ReturnTitleContainer>
+						<ReturnTitleSvg />
+						<ReturnTitleText>ВОЗВРАТ</ReturnTitleText>
+					</ReturnTitleContainer>
+				) : null}
 			</StatusTitleContainer>
 		</Container>
 	)
