@@ -1653,6 +1653,13 @@
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.4.tgz#fcf7205c25dff795ee79af1e30da2c9790808f11"
   integrity sha512-rZ5drC/jWjrArrS8BR6SIr4cWpW09RNTYt9AMZo3Jwwif+iacXAqgVjm0B0Bv/S1jhDXKHqRVNCbACkJ89RAnQ==
 
+"@types/react-native-collapsible@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@types/react-native-collapsible/-/react-native-collapsible-0.11.0.tgz#2f8c42843d1602709ad8c9cd6180bc690dbd0879"
+  integrity sha512-UL4MgDKjevhbGL13t4G7WAxFzlPPzbB5LuHyinEwrXuROt3EujoEc8M6RD244nNEREYDqGVhvCVicx86wCRW/w==
+  dependencies:
+    react-native-collapsible "*"
+
 "@types/react-native@*":
   version "0.64.13"
   resolved "https://registry.yarnpkg.com/@types/react-native/-/react-native-0.64.13.tgz#9e57b85631380b75979a09f5a97e1884299e8d5a"
@@ -5118,6 +5125,11 @@ react-native-calendar-strip@^2.2.4:
     node-git-hooks "^1.0.1"
     prop-types "^15.6.0"
     recyclerlistview "^3.0.0"
+
+react-native-collapsible@*, react-native-collapsible@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/react-native-collapsible/-/react-native-collapsible-1.6.0.tgz#ca261ffff16914f872059bb0972e3a78c4b37f9c"
+  integrity sha512-beZjdgbT9Y/Pg591Xy5XkKG20HffJiVad4n9bfcUF/f783A+tvOVXnqvbS58Lkaym93mi4jcDPMuW9Vc1t6rqg==
 
 react-native-gesture-handler@~1.10.2:
   version "1.10.3"

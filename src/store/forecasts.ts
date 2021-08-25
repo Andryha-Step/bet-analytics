@@ -17,9 +17,56 @@ export interface ForecastsRequest {
 	total: number
 }
 
+export interface ExpressType {
+	id: number
+	forecast_id: number
+	sport_id: number
+	league: string
+	team_1_name: string
+	team_2_name: string
+	released_at: string
+	history: any[]
+	last_game_team_1: any[]
+	last_game_team_2: any[]
+	result: string
+	coefficient: number
+	recommended_stake: any
+	our_forecast: any
+	created_at: string
+	updated_at: string
+	team_1_logo: string
+	team_2_logo: string
+	media: Medum[]
+}
+
+export interface Medum {
+	id: number
+	model_type: string
+	model_id: number
+	uuid: string
+	collection_name: string
+	name: string
+	file_name: string
+	mime_type: string
+	disk: string
+	conversions_disk: string
+	size: number
+	manipulations: any[]
+	custom_properties: any[]
+	generated_conversions: GeneratedConversions
+	responsive_images: any[]
+	order_column: number
+	created_at: string
+	updated_at: string
+}
+
+export interface GeneratedConversions {
+	small: boolean
+}
+
 export interface Daum2 {
 	id: number
-	type: string
+	type: 'single' | 'express'
 	subscribe_type: string
 	status: any
 	parent_id: any
@@ -31,7 +78,7 @@ export interface Daum2 {
 	our_forecast: string
 	created_at: string
 	updated_at: string
-	events: Event2[]
+	events: Event2[] | ExpressType[]
 }
 
 export interface Event2 {
@@ -43,8 +90,8 @@ export interface Event2 {
 	team_2_name: string
 	released_at: string
 	history: History2[]
-	last_game_team_1: any[]
-	last_game_team_2: any[]
+	last_game_team_1: LastGameTeam[]
+	last_game_team_2: LastGameTeam[]
 	result: string
 	coefficient: number
 	recommended_stake: any
@@ -101,7 +148,7 @@ export interface ArchiveRequest {
 
 export interface Daum {
 	id: number
-	type: string
+	type: 'single' | 'express'
 	subscribe_type: string
 	status: 'passed' | 'failed' | 'returned'
 	parent_id?: number
@@ -113,7 +160,7 @@ export interface Daum {
 	our_forecast: string
 	created_at: string
 	updated_at: string
-	events: Event[]
+	events: Event[] | ExpressType[]
 }
 
 export interface Event {
@@ -125,8 +172,8 @@ export interface Event {
 	team_2_name: string
 	released_at: string
 	history: History[]
-	last_game_team_1: LastGameTeam1[]
-	last_game_team_2: LastGameTeam2[]
+	last_game_team_1: LastGameTeam[]
+	last_game_team_2: LastGameTeam[]
 	result: string
 	coefficient: number
 	recommended_stake: any
@@ -144,13 +191,7 @@ export interface History {
 	result: string
 }
 
-export interface LastGameTeam1 {
-	date: string
-	teams: string
-	result: string
-}
-
-export interface LastGameTeam2 {
+export interface LastGameTeam {
 	date: string
 	teams: string
 	result: string

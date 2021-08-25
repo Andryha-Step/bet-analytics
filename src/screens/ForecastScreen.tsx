@@ -1,16 +1,18 @@
-import React from 'react'
+import React, { ComponentProps } from 'react'
 import { observer } from 'mobx-react-lite'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 import styled from 'styled-components/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import forecasts, { Daum2 } from '../store/forecasts'
-import { ScreenHeader } from '../components/components'
-import Svg, { Path } from 'react-native-svg'
+import forecasts, { Daum2, LastGameTeam } from '../store/forecasts'
+import { ExpressForecastCardFull, ScreenHeader } from '../components/components'
+import Svg, { Circle, Path } from 'react-native-svg'
 import { useNavigation } from '@react-navigation/native'
 import colors from '../constants/colors'
 import moment from 'moment'
 import { ProgressBar } from 'react-native-paper'
+import { Dimensions, ToastAndroid, View } from 'react-native'
+import Accordion from 'react-native-collapsible/Accordion'
 
 interface Props {
 	route: {
@@ -22,27 +24,37 @@ interface Props {
 
 export const ForecastScreen = observer(({ route }: Props) => {
 	const navigation = useNavigation()
+	const { forecast } = route.params
 
 	return (
 		<Container>
 			<ScreenHeader>
 				<HeaderContainer>
-					<BackArrow onPress={() => navigation.goBack()}>
-						<BackArrowSvg />
-					</BackArrow>
-					<HeaderTitle>Лента</HeaderTitle>
+					<MainHeaderView>
+						<BackArrow onPress={() => navigation.goBack()}>
+							<BackArrowSvg />
+						</BackArrow>
+						<HeaderTitle>Лента</HeaderTitle>
+					</MainHeaderView>
+					{forecast.type === 'express' ? <ExpressHeader route={route}></ExpressHeader> : null}
 				</HeaderContainer>
 			</ScreenHeader>
 			<Scroll>
 				<MainView>
-					<DefaultForecast route={route} />
-					<MeetingStats route={route} />
+					{forecast.type === 'single' ? <DefaultForecast route={route} /> : null}
+					{forecast.type === 'express' ? <ExpressForecast route={route} /> : null}
 				</MainView>
+				{forecast.our_forecast.trim() ? <ForecastEvent text={forecast.our_forecast} /> : null}
 			</Scroll>
 		</Container>
 	)
 })
 
+const MainHeaderView = styled.View`
+	align-items: center;
+	height: 100%;
+	flex-direction: row;
+`
 const Container = styled(SafeAreaView)`
 	background-color: ${colors.background};
 	height: 100%;
@@ -53,6 +65,8 @@ const HeaderContainer = styled.View`
 	align-items: center;
 	height: 100%;
 	flex-direction: row;
+	width: 100%;
+	justify-content: space-between;
 `
 const BackArrowSvg = () => {
 	return (
@@ -92,7 +106,7 @@ const DefaultForecast = ({ route }: Props) => {
 							<DefaultCommandName style={{ textAlign: 'left' }}>{forecast.events[0].team_1_name}</DefaultCommandName>
 						</DefaultCommandView>
 						<TimerView>
-							<Time route={route} />
+							<Time timestamp={forecast.released_at} />
 							<TimerDesc>начало через</TimerDesc>
 						</TimerView>
 						<DefaultCommandView style={{ alignItems: 'flex-end' }}>
@@ -114,17 +128,40 @@ const DefaultForecast = ({ route }: Props) => {
 						</CoefRight>
 					</CoefContainer>
 				</DefaultHeaderBody>
+
+				<View style={{ marginBottom: 32 }}>
+					{forecast.events[0].history.length ? <MeetingStats route={route} /> : null}
+					{forecast.events[0].last_game_team_1.length ? (
+						<MeetingStatsTitle style={{ paddingLeft: 16, paddingRight: 16, marginBottom: 4 }}>
+							Статистика последних матчей
+						</MeetingStatsTitle>
+					) : null}
+					{forecast.events[0].last_game_team_1.length ? (
+						<LastForecastsHistory
+							name={forecast.events[0].team_1_name}
+							logo={forecast.events[0].team_1_logo}
+							data={forecast.events[0].last_game_team_1}
+						/>
+					) : null}
+					{forecast.events[0].last_game_team_2.length ? (
+						<LastForecastsHistory
+							name={forecast.events[0].team_2_name}
+							logo={forecast.events[0].team_2_logo}
+							data={forecast.events[0].last_game_team_2}
+						/>
+					) : null}
+				</View>
 			</DefaultHeaderContainer>
 		</>
 	)
 }
 
-const Time = ({ route }: Props) => {
-	const { forecast } = route.params
+const Time = ({ timestamp }: { timestamp: string }) => {
 	const [time, setTime] = React.useState('')
+	const navigation = useNavigation()
 
 	const getTime = () => {
-		return moment(forecast.released_at)
+		return moment(timestamp)
 			.subtract(moment.duration(moment().format('LTS')))
 			.format('LTS')
 	}
@@ -134,6 +171,12 @@ const Time = ({ route }: Props) => {
 	}, [])
 
 	React.useEffect(() => {
+		if (moment().diff(timestamp) > 0) {
+			forecasts.getForecasts()
+			navigation.goBack()
+			ToastAndroid.showWithGravity('Событие началось. Прогноз недоступен.', ToastAndroid.SHORT, ToastAndroid.BOTTOM)
+		}
+
 		let timeout = setTimeout(() => {
 			setTime(getTime())
 		}, 1000)
@@ -146,9 +189,7 @@ const Time = ({ route }: Props) => {
 	return <Timer>{time}</Timer>
 }
 
-const DefaultHeaderContainer = styled.View`
-	height: 309px;
-`
+const DefaultHeaderContainer = styled.View``
 const DefaultImageHeader = styled.Image`
 	width: 100%;
 	height: 309px;
@@ -204,7 +245,6 @@ const TimerView = styled.View`
 const Timer = styled.Text`
 	font-family: Poppins-SemiBold;
 	font-size: 20px;
-	line-height: 22px;
 	color: #ffffff;
 `
 const TimerDesc = styled.Text`
@@ -270,7 +310,6 @@ const CoefData = styled.Text`
 
 const MeetingStats = ({ route }: Props) => {
 	const { forecast } = route.params
-	const [percent, setPercent] = React.useState()
 
 	const computeProgressPercent = (): number => {
 		let percent = 0
@@ -333,6 +372,7 @@ const MeetingStatsContainer = styled.View`
 	padding: 0 16px;
 	width: 100%;
 	flex-direction: column;
+	margin-bottom: 16px;
 `
 const MeetingStatsTitle = styled.Text`
 	font-family: Inter-SemiBold;
@@ -357,6 +397,7 @@ const MeetingStatsBlockTitleView = styled.View``
 const MeetingStatsBlockTitle = styled.View`
 	flex-direction: row;
 	justify-content: space-between;
+	align-items: center;
 `
 const MeetingStatsBlockCommand = styled.View`
 	flex-direction: row;
@@ -393,4 +434,261 @@ const MeetingStatsLineScore = styled.Text`
 	font-family: Inter-Regular;
 	font-size: 14px;
 	color: #ffffff;
+`
+
+const LastForecastsHistory = ({ data, logo, name }: any) => {
+	const lastGames = data as LastGameTeam[]
+	const logoUri = logo as string
+	const commandName = name as string
+
+	const [show, setShow] = React.useState(false)
+
+	console.log(lastGames)
+
+	return (
+		<LastForecastsStatsBlock>
+			<Accordion
+				activeSections={[show ? Number(!show) : -1]}
+				sections={['Command']}
+				renderHeader={() => (
+					<LastForecastsBlockHeader>
+						<MeetingStatsBlockTitleView>
+							<MeetingStatsBlockTitle>
+								<MeetingStatsBlockCommand>
+									<MeetingStatsBlockCommandIcon source={{ uri: logoUri }} />
+									<MeetingStatsBlockCommandPercent>{commandName}</MeetingStatsBlockCommandPercent>
+								</MeetingStatsBlockCommand>
+								<CollapseArrow show={show} />
+							</MeetingStatsBlockTitle>
+						</MeetingStatsBlockTitleView>
+					</LastForecastsBlockHeader>
+				)}
+				renderContent={() => (
+					<MeetingStatsBlockBody style={{ paddingTop: 0 }}>
+						{lastGames.map(event => {
+							const computeIndicatorColor = (): string => {
+								const [leftRes, rightRes] = event.result.split(':')
+
+								if (leftRes > rightRes) return colors.card.green
+								if (leftRes < rightRes) return colors.card.red
+								return '#FFB92E'
+							}
+
+							return (
+								<MeetingStatsLineView key={event.date + event.teams}>
+									<MeetingStatsLineDate>{event.date.split('-').slice(1).join('/')}</MeetingStatsLineDate>
+									<MeetingStatsLineCommands>{event.teams}</MeetingStatsLineCommands>
+									<ScoreBlock>
+										<Indicator color={computeIndicatorColor()} />
+										<MeetingStatsLineScore>{event.result}</MeetingStatsLineScore>
+									</ScoreBlock>
+								</MeetingStatsLineView>
+							)
+						})}
+					</MeetingStatsBlockBody>
+				)}
+				onChange={e => {
+					setShow(prev => !prev)
+				}}
+			/>
+		</LastForecastsStatsBlock>
+	)
+}
+
+const CollapseArrow = ({ show }: { show: boolean }) => {
+	return (
+		<Svg style={{ transform: [{ rotate: `${show ? 180 : 0}deg` }] }} width="13" height="8" viewBox="0 0 13 8" fill="none">
+			<Path
+				d="M1.7929 7.70654C1.40312 8.09633 0.769019 8.0942 0.381054 7.70624L0.293208 7.61839C-0.0967477 7.22844 -0.0993609 6.59881 0.295118 6.20433L5.37914 1.1203C5.77015 0.729292 6.40064 0.725824 6.79512 1.1203L11.8791 6.20433C12.2702 6.59534 12.269 7.23043 11.8811 7.61839L11.7932 7.70624C11.4033 8.09619 10.7744 8.09954 10.3814 7.70654L6.08713 3.41231L1.7929 7.70654Z"
+				fill="#8F919C"
+			/>
+		</Svg>
+	)
+}
+
+const ScoreBlock = styled.View`
+	flex-direction: row;
+	align-items: center;
+	width: 40px;
+	justify-content: space-between;
+`
+const Indicator = ({ color }: { color: string }) => {
+	return (
+		<Svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+			<Circle cx="5" cy="5" r="5" fill={color} />
+		</Svg>
+	)
+}
+
+const LastForecastsStatsBlock = styled.View`
+	border-radius: 12px;
+	flex-direction: column;
+	margin-top: 12px;
+	overflow: hidden;
+	margin: 8px 16px 0;
+`
+const LastForecastsBlockHeader = styled.View`
+	background-color: #1b1c21;
+	padding: 16px;
+`
+
+const ForecastEvent = ({ text }: { text: string }) => {
+	return (
+		<ForecastEventBlock>
+			<ForecastEventTitle>Прогноз события</ForecastEventTitle>
+			<ForecastEventBody>{text}</ForecastEventBody>
+		</ForecastEventBlock>
+	)
+}
+
+const ForecastEventBlock = styled.View`
+	background-color: #1b1c21;
+	padding: 32px 16px;
+	border-top-left-radius: 12px;
+	border-top-right-radius: 12px;
+`
+const ForecastEventTitle = styled.Text`
+	font-family: Inter-SemiBold;
+	font-size: 14px;
+	color: #ffffff;
+	line-height: 14px;
+`
+const ForecastEventBody = styled.Text`
+	font-family: Inter-Regular;
+	font-size: 14px;
+	color: #8f919c;
+	margin-top: 16px;
+	line-height: 14px;
+`
+
+///////////////////////////////////////////////
+
+const ExpressHeader = ({ route }: Props) => {
+	const { forecast } = route.params
+
+	return (
+		<ExpressHeaderView>
+			<ExpressHeaderViewCoeff>
+				<ExpressCoefData>~{forecast.coefficient}</ExpressCoefData>
+				<ExpressCoefTitle>коэфф..</ExpressCoefTitle>
+			</ExpressHeaderViewCoeff>
+			<ExpressHeaderViewSeparator />
+			<ExpressHeaderViewTimer>
+				<Time timestamp={forecast.released_at} />
+				<ExpressCoefTitle>начало через</ExpressCoefTitle>
+			</ExpressHeaderViewTimer>
+		</ExpressHeaderView>
+	)
+}
+const ExpressHeaderView = styled.View`
+	height: 100%;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	margin-right: 16px;
+`
+const ExpressHeaderViewCoeff = styled.View`
+	flex-grow: 1;
+	height: 100%;
+	align-items: center;
+	justify-content: center;
+`
+const ExpressHeaderViewSeparator = styled.View`
+	width: 1px;
+	height: 32px;
+	background-color: #1b1c21;
+	margin: 0 12px;
+`
+const ExpressHeaderViewTimer = styled.View`
+	flex-grow: 1;
+	min-width: 80px;
+	height: 100%;
+	align-items: center;
+	justify-content: center;
+`
+const ExpressCoefTitle = styled.Text`
+	color: #ffffff;
+	font-family: Inter-Regular;
+	font-size: 10px;
+	line-height: 10px;
+	text-align: center;
+`
+const ExpressCoefData = styled.Text`
+	color: #ffffff;
+	font-family: Poppins-SemiBold;
+	font-size: 20px;
+	text-align: center;
+`
+
+const ExpressForecast = ({ route }: Props) => {
+	const { forecast } = route.params
+
+	return (
+		<ExpressForecastView>
+			<ExpressForecastBg source={require('../icons/express-forecast.png')} />
+			<ExpressForecastHeaderView>
+				<ExpressForecastTitleView>
+					<ExpressForecastIcon />
+					<ExpressForecastTitle>EXPRESS</ExpressForecastTitle>
+				</ExpressForecastTitleView>
+				<ExpressForecastDesc>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Eget ultrices eu elementum.</ExpressForecastDesc>
+			</ExpressForecastHeaderView>
+			<ExpressForecastCardView>
+				{forecast.events.map(event => {
+					return <ExpressForecastCardFull key={event.id + event.result} forecast={event}></ExpressForecastCardFull>
+				})}
+			</ExpressForecastCardView>
+		</ExpressForecastView>
+	)
+}
+
+const ExpressForecastView = styled.View`
+	position: relative;
+	min-height: ${Dimensions.get('screen').height - 210 - 56}px;
+`
+const ExpressForecastBg = styled.Image`
+	width: 100%;
+	height: 210px;
+	position: absolute;
+`
+const ExpressForecastHeaderView = styled.View`
+	width: 100%;
+	margin-top: 54px;
+	margin-bottom: 34px;
+	justify-content: center;
+	align-items: center;
+`
+const ExpressForecastTitleView = styled.View`
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+`
+const ExpressForecastTitle = styled.Text`
+	color: #ffffff;
+	margin-left: 6px;
+	font-family: Inter-Bold;
+	font-size: 20.5px;
+`
+const ExpressForecastDesc = styled.Text`
+	color: #ffffff;
+	font-family: Inter-Regular;
+	font-size: 12px;
+	text-align: center;
+	max-width: 288px;
+	margin-top: 12px;
+`
+const ExpressForecastIcon = () => {
+	return (
+		<Svg width="23" height="30" viewBox="0 0 23 30" fill="none">
+			<Path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M0 19.1378H7.01995V29.9853L22.3302 10.8475H15.3102V0L0 19.1378ZM9.7834 16.3744H5.74967L12.5468 7.878V13.611H16.5805L9.7834 22.1074V16.3744Z"
+				fill="white"
+			/>
+		</Svg>
+	)
+}
+const ExpressForecastCardView = styled.View`
+	padding: 16px;
 `
