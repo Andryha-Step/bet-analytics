@@ -1,9 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx'
+import moment from 'moment'
 import API from './api'
 
 export interface ForecastsRequest {
 	current_page: number
-	data: Daum2[]
+	data: Daum2[] | LockedDaum[]
 	first_page_url: string
 	from: number
 	last_page: number
@@ -25,7 +26,7 @@ export interface ExpressType {
 	team_1_name: string
 	team_2_name: string
 	released_at: string
-	history: any[]
+	history: History2[]
 	last_game_team_1: any[]
 	last_game_team_2: any[]
 	result: string
@@ -67,8 +68,8 @@ export interface GeneratedConversions {
 export interface Daum2 {
 	id: number
 	type: 'single' | 'express'
-	subscribe_type: string
-	status: any
+	subscribe_type: 'pro' | 'lite' | 'free'
+	status: 'passed' | 'failed' | 'returned'
 	parent_id: any
 	is_fake: number
 	show_in_archive: boolean
@@ -79,6 +80,7 @@ export interface Daum2 {
 	created_at: string
 	updated_at: string
 	events: Event2[] | ExpressType[]
+	is_purchas: boolean
 }
 
 export interface Event2 {
@@ -149,7 +151,7 @@ export interface ArchiveRequest {
 export interface Daum {
 	id: number
 	type: 'single' | 'express'
-	subscribe_type: string
+	subscribe_type: 'pro' | 'lite' | 'free'
 	status: 'passed' | 'failed' | 'returned'
 	parent_id?: number
 	is_fake: number
@@ -161,6 +163,21 @@ export interface Daum {
 	created_at: string
 	updated_at: string
 	events: Event[] | ExpressType[]
+	is_purchas: boolean
+}
+
+export interface LockedDaum {
+	id: 12
+	type: 'single' | 'express'
+	subscribe_type: 'pro' | 'lite' | 'free'
+	status: null
+	parent_id: null
+	show_in_archive: boolean
+	released_at: string
+	coefficient: number
+	created_at: string
+	updated_at: string
+	is_purchas: false
 }
 
 export interface Event {
@@ -228,32 +245,74 @@ export interface Link {
 	active: boolean
 }
 
+export interface Sport {
+	id: number
+	name: string
+	icon: string
+}
+
 class Forecasts {
 	forecasts: ForecastsRequest | undefined = undefined
 	archive: ArchiveRequest | undefined = undefined
+	sports: Sport[] | undefined = undefined
 
 	constructor() {
 		makeAutoObservable(this)
 	}
 
 	async getForecasts() {
-		await API.request?.get<ForecastsRequest>('/api/app/forecasts').then(response => {
-			runInAction(() => {
-				this.forecasts = response.data
+		await API.request
+			?.get<ForecastsRequest>('/api/app/forecasts')
+			.then(response => {
+				runInAction(() => {
+					this.forecasts = response.data
+				})
 			})
-		})
+			.catch(e => e)
+
+		// runInAction(() => {
+		// 	this.forecasts!.data = this.forecasts!.data.sort((left, right): any => {
+		// 		return moment.utc(left.released_at).diff(moment.utc(right.released_at))
+		// 	})
+		// })
 
 		return this.forecasts
 	}
 
 	async getArchive() {
-		await API.request?.get<ArchiveRequest>('/api/app/forecasts-archive').then(response => {
-			runInAction(() => {
-				this.archive = response.data
+		await API.request
+			?.get<ArchiveRequest>('/api/app/forecasts-archive')
+			.then(response => {
+				runInAction(() => {
+					this.archive = response.data
+				})
 			})
-		})
+			.catch(e => e)
 
 		return this.archive
+	}
+
+	async getSports() {
+		await API.request
+			?.get<Sport[]>('/api/app/sports')
+			.then(response => {
+				runInAction(() => {
+					this.sports = response.data
+				})
+			})
+			.catch(e => e)
+
+		return this.sports
+	}
+
+	getSport(id: number) {
+		const result: Sport[] = []
+
+		this.sports?.forEach(sport => {
+			if (sport.id === id) result.push(sport)
+		})
+
+		return result[0]
 	}
 }
 

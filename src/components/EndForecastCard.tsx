@@ -4,8 +4,10 @@ import { observer } from 'mobx-react-lite'
 import styled from 'styled-components/native'
 import Svg, { Circle, Path } from 'react-native-svg'
 import colors from '../constants/colors'
-import { Daum } from '../store/forecasts'
+import forecasts, { Daum } from '../store/forecasts'
 import moment from 'moment'
+import { useNavigation } from '@react-navigation/native'
+import { SkeletonImage } from './SkeletonImage'
 
 interface Props {
 	forecast: Daum
@@ -18,9 +20,11 @@ export const EndForecastCard = observer(({ forecast }: Props) => {
 	const monthFirstSymbol = date.format('LL').split(' ')[1].charAt(0).toUpperCase()
 	const monthLet = date.format('LL').split(' ')[1].slice(1)
 	const dateMonth = monthFirstSymbol + monthLet
+	const navigation = useNavigation()
+	const sport = forecasts.getSport(forecast.events[0].sport_id)
 
 	return (
-		<Container activeOpacity={1}>
+		<Container activeOpacity={1} onPress={() => navigation.navigate('Forecast' as never, { forecast } as never)}>
 			<CapContainer>
 				<Cap color={colors.card[forecast.status]} />
 			</CapContainer>
@@ -37,15 +41,15 @@ export const EndForecastCard = observer(({ forecast }: Props) => {
 				</DateContainer>
 				<ConfrontationContainer>
 					<ConfrontationLeft>
-						<CommandIcon source={{ uri: forecast.events[0].team_1_logo }} />
+						<SkeletonImage uri={forecast.events[0].team_1_logo} style={{ width: 64, height: 64 }} />
 					</ConfrontationLeft>
 					<ConfrontationCentral>
-						<BallIcon source={require('../icons/ball-football.png')} />
-						<SportName>{forecast.events[0].sport_id}</SportName>
+						<SkeletonImage uri={sport.icon} style={{ width: 24, height: 24, borderRadius: 24 }} />
+						<SportName>{sport.name.toUpperCase()}</SportName>
 						<CommandNames>{forecast.events[0].league}</CommandNames>
 					</ConfrontationCentral>
 					<ConfrontationRight>
-						<CommandIcon source={{ uri: forecast.events[0].team_2_logo }} />
+						<SkeletonImage uri={forecast.events[0].team_2_logo} style={{ width: 64, height: 64 }} />
 					</ConfrontationRight>
 				</ConfrontationContainer>
 				<CommandNamesContainer>
@@ -104,7 +108,7 @@ const BottomCapContainer = styled.View`
 	padding: 0 4px;
 	height: 9px;
 	width: 100%;
-	bottom: 0px;
+	bottom: -1px;
 `
 const Body = styled.View`
 	padding: 16px;
@@ -115,7 +119,6 @@ const StatusTitleContainer = styled.View`
 	width: 100%;
 	align-items: center;
 	position: absolute;
-	top: 0.4px;
 `
 const StatusTitle = styled.View`
 	border-radius: 48px;
@@ -169,14 +172,6 @@ const ConfrontationCentral = styled.View`
 	flex-direction: column;
 `
 const ConfrontationRight = styled.View``
-const CommandIcon = styled.Image`
-	width: 64px;
-	height: 64px;
-`
-const BallIcon = styled.Image`
-	width: 24px;
-	height: 24px;
-`
 const SportName = styled.Text`
 	color: #9a9ca6;
 	margin-top: 12px;

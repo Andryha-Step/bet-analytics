@@ -2,33 +2,24 @@ import React from 'react'
 import { observer } from 'mobx-react-lite'
 
 import styled from 'styled-components/native'
+import { useNavigation } from '@react-navigation/native'
 
-type Side = 'left' | 'right'
 interface Props {
-	sideValue: (side: Side) => any
+	index: number
 }
 
-export const FeedNavigation = observer(({ sideValue }: Props) => {
-	const [side, setSide] = React.useState<Side>('left')
-
-	const changeSideHandler = (value: Side) => {
-		sideValue(value)
-		setSide(value)
-	}
-
-	React.useEffect(() => {
-		changeSideHandler('left')
-	}, [])
+export const FeedNavigation = observer(({ index }: Props) => {
+	const navigation = useNavigation()
 
 	return (
 		<Container>
-			<Button activeOpacity={0.8} onPress={() => changeSideHandler('left')}>
-				<Label active={side === 'left'}>Текущие</Label>
-				<ActiveLine active={side === 'left'} />
+			<Button activeOpacity={0.8} onPress={() => navigation.navigate('Left' as never)}>
+				<Label active={index === 0}>Текущие</Label>
+				<ActiveLine active={index === 0} />
 			</Button>
-			<Button activeOpacity={0.8} onPress={() => changeSideHandler('right')}>
-				<Label active={side === 'right'}>Завершенные</Label>
-				<ActiveLine active={side === 'right'} />
+			<Button activeOpacity={0.8} onPress={() => navigation.navigate('Right' as never)}>
+				<Label active={index === 1}>Завершенные</Label>
+				<ActiveLine active={index === 1} />
 			</Button>
 		</Container>
 	)

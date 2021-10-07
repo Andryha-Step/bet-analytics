@@ -1,6 +1,5 @@
 import React, { ComponentProps } from 'react'
 import { observer } from 'mobx-react-lite'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 import styled from 'styled-components/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -11,7 +10,7 @@ import { useNavigation } from '@react-navigation/native'
 import colors from '../constants/colors'
 import moment from 'moment'
 import { ProgressBar } from 'react-native-paper'
-import { Dimensions, ToastAndroid, View } from 'react-native'
+import { Dimensions, ScrollView, ToastAndroid, View } from 'react-native'
 import Accordion from 'react-native-collapsible/Accordion'
 
 interface Props {
@@ -27,26 +26,31 @@ export const ForecastScreen = observer(({ route }: Props) => {
 	const { forecast } = route.params
 
 	return (
-		<Container>
-			<ScreenHeader>
-				<HeaderContainer>
-					<MainHeaderView>
-						<BackArrow onPress={() => navigation.goBack()}>
-							<BackArrowSvg />
-						</BackArrow>
-						<HeaderTitle>Лента</HeaderTitle>
-					</MainHeaderView>
-					{forecast.type === 'express' ? <ExpressHeader route={route}></ExpressHeader> : null}
-				</HeaderContainer>
-			</ScreenHeader>
-			<Scroll>
-				<MainView>
-					{forecast.type === 'single' ? <DefaultForecast route={route} /> : null}
-					{forecast.type === 'express' ? <ExpressForecast route={route} /> : null}
-				</MainView>
-				{forecast.our_forecast.trim() ? <ForecastEvent text={forecast.our_forecast} /> : null}
-			</Scroll>
-		</Container>
+		<SafeAreaView style={{ flexGrow: 1, backgroundColor: colors.background }}>
+			<Container>
+				<ScreenHeader>
+					<HeaderContainer>
+						<MainHeaderView>
+							<BackArrow onPress={() => navigation.goBack()}>
+								<BackArrowSvg />
+							</BackArrow>
+							<HeaderTitle>Лента</HeaderTitle>
+						</MainHeaderView>
+						{forecast.type === 'express' ? <ExpressHeader route={route}></ExpressHeader> : null}
+					</HeaderContainer>
+				</ScreenHeader>
+				<View style={{ flex: 1 }}>
+					<View style={{ flexGrow: 1 }}>
+						<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+							{forecast.type === 'single' ? <DefaultForecast route={route} /> : null}
+							{forecast.type === 'express' ? <ExpressForecast route={route} /> : null}
+
+							{forecast.our_forecast.trim() ? <ForecastEvent text={forecast.our_forecast} /> : null}
+						</ScrollView>
+					</View>
+				</View>
+			</Container>
+		</SafeAreaView>
 	)
 })
 
@@ -55,12 +59,10 @@ const MainHeaderView = styled.View`
 	height: 100%;
 	flex-direction: row;
 `
-const Container = styled(SafeAreaView)`
+const Container = styled.View`
 	background-color: ${colors.background};
-	height: 100%;
+	flex-grow: 1;
 `
-const Scroll = styled.ScrollView``
-const MainView = styled.View``
 const HeaderContainer = styled.View`
 	align-items: center;
 	height: 100%;
@@ -91,72 +93,92 @@ const HeaderTitle = styled.Text`
 const DefaultForecast = ({ route }: Props) => {
 	const { forecast } = route.params
 
+	const getStatusText = () => {
+		if (forecast.status === 'passed') return 'ПРОШЕЛ'
+		if (forecast.status === 'failed') return 'НЕ ПРОШЕЛ'
+		if (forecast.status === 'returned') return 'ВОЗВРАТ'
+		return ''
+	}
+
 	return (
-		<>
-			<DefaultHeaderContainer>
-				<DefaultImageHeader source={require('../icons/default-forecast.png')} />
-				<LeagueContainer>
-					<SportIcon source={require('../icons/ball-football.png')} />
-					<LeagueText>Футбол - {forecast.events[0].league}</LeagueText>
-				</LeagueContainer>
-				<DefaultHeaderBody>
-					<DefaultCentralView>
-						<DefaultCommandView>
-							<DefaultCommandImage source={{ uri: forecast.events[0].team_1_logo }} />
-							<DefaultCommandName style={{ textAlign: 'left' }}>{forecast.events[0].team_1_name}</DefaultCommandName>
-						</DefaultCommandView>
-						<TimerView>
-							<Time timestamp={forecast.released_at} />
-							<TimerDesc>начало через</TimerDesc>
-						</TimerView>
-						<DefaultCommandView style={{ alignItems: 'flex-end' }}>
-							<DefaultCommandImage source={{ uri: forecast.events[0].team_2_logo }} />
-							<DefaultCommandName style={{ textAlign: 'right' }}>{forecast.events[0].team_2_name}</DefaultCommandName>
-						</DefaultCommandView>
-					</DefaultCentralView>
+		<DefaultHeaderContainer>
+			<DefaultImageHeader source={require('../icons/default-forecast.png')} />
+			<LeagueContainer>
+				<SportIcon source={{ uri: forecasts.getSport(forecast.events[0].sport_id).icon }} />
+				<LeagueText>
+					{forecasts.getSport(forecast.events[0].sport_id).name} - {forecast.events[0].league}
+				</LeagueText>
+			</LeagueContainer>
+			<DefaultHeaderBody>
+				<DefaultCentralView>
+					<DefaultCommandView>
+						<DefaultCommandImage source={{ uri: forecast.events[0].team_1_logo }} />
+						<DefaultCommandName style={{ textAlign: 'left' }}>{forecast.events[0].team_1_name}</DefaultCommandName>
+					</DefaultCommandView>
+					<TimerView>
+						{!forecast.status ? (
+							<>
+								{moment().diff(forecast.released_at) < 0 ? (
+									<>
+										<Time timestamp={forecast.released_at} subscribeType={forecast.subscribe_type} />
+										<TimerDesc>начало через</TimerDesc>
+									</>
+								) : (
+									<TimerDesc>Ожидает{'\n'}результатов</TimerDesc>
+								)}
+							</>
+						) : (
+							<>
+								<EndTimeIndicator color={colors.card[forecast.status]} />
+								<EndTimeTitle>{getStatusText()}</EndTimeTitle>
+							</>
+						)}
+					</TimerView>
+					<DefaultCommandView style={{ alignItems: 'flex-end' }}>
+						<DefaultCommandImage source={{ uri: forecast.events[0].team_2_logo }} />
+						<DefaultCommandName style={{ textAlign: 'right' }}>{forecast.events[0].team_2_name}</DefaultCommandName>
+					</DefaultCommandView>
+				</DefaultCentralView>
 
-					<CoefContainer>
-						<CoefLeft>
-							<LeftPanel />
-							<CoefTitle>КОЭФФИЦИЕНТ</CoefTitle>
-							<CoefData>~{forecast.events[0].coefficient}</CoefData>
-						</CoefLeft>
-						<CoefRight>
-							<RightPanel />
-							<CoefTitle>СТАВКА</CoefTitle>
-							<CoefData>{forecast.events[0].result}</CoefData>
-						</CoefRight>
-					</CoefContainer>
-				</DefaultHeaderBody>
+				<CoefContainer>
+					<CoefLeft>
+						<LeftPanel />
+						<CoefTitle>КОЭФФИЦИЕНТ</CoefTitle>
+						<CoefData>~{forecast.events[0].coefficient}</CoefData>
+					</CoefLeft>
+					<CoefRight>
+						<RightPanel />
+						<CoefTitle>СТАВКА</CoefTitle>
+						<CoefData>{forecast.events[0].result}</CoefData>
+					</CoefRight>
+				</CoefContainer>
+			</DefaultHeaderBody>
 
-				<View style={{ marginBottom: 32 }}>
-					{forecast.events[0].history.length ? <MeetingStats route={route} /> : null}
-					{forecast.events[0].last_game_team_1.length ? (
-						<MeetingStatsTitle style={{ paddingLeft: 16, paddingRight: 16, marginBottom: 4 }}>
-							Статистика последних матчей
-						</MeetingStatsTitle>
-					) : null}
-					{forecast.events[0].last_game_team_1.length ? (
-						<LastForecastsHistory
-							name={forecast.events[0].team_1_name}
-							logo={forecast.events[0].team_1_logo}
-							data={forecast.events[0].last_game_team_1}
-						/>
-					) : null}
-					{forecast.events[0].last_game_team_2.length ? (
-						<LastForecastsHistory
-							name={forecast.events[0].team_2_name}
-							logo={forecast.events[0].team_2_logo}
-							data={forecast.events[0].last_game_team_2}
-						/>
-					) : null}
-				</View>
-			</DefaultHeaderContainer>
-		</>
+			<View style={{ marginBottom: 32 }}>
+				{forecast.events[0].history.length && forecast.events[0].history[0].date ? <MeetingStats route={route} /> : null}
+				{forecast.events[0].last_game_team_1.length ? (
+					<MeetingStatsTitle style={{ paddingLeft: 16, paddingRight: 16, marginBottom: 4 }}>Статистика последних матчей</MeetingStatsTitle>
+				) : null}
+				{forecast.events[0].last_game_team_1.length ? (
+					<LastForecastsHistory
+						name={forecast.events[0].team_1_name}
+						logo={forecast.events[0].team_1_logo}
+						data={forecast.events[0].last_game_team_1}
+					/>
+				) : null}
+				{forecast.events[0].last_game_team_2.length ? (
+					<LastForecastsHistory
+						name={forecast.events[0].team_2_name}
+						logo={forecast.events[0].team_2_logo}
+						data={forecast.events[0].last_game_team_2}
+					/>
+				) : null}
+			</View>
+		</DefaultHeaderContainer>
 	)
 }
 
-const Time = ({ timestamp }: { timestamp: string }) => {
+const Time = ({ timestamp, subscribeType }: { timestamp: string; subscribeType: 'pro' | 'lite' | 'free' }) => {
 	const [time, setTime] = React.useState('')
 	const navigation = useNavigation()
 
@@ -171,7 +193,7 @@ const Time = ({ timestamp }: { timestamp: string }) => {
 	}, [])
 
 	React.useEffect(() => {
-		if (moment().diff(timestamp) > 0) {
+		if (moment().diff(timestamp) > 0 && subscribeType !== 'free') {
 			forecasts.getForecasts()
 			navigation.goBack()
 			ToastAndroid.showWithGravity('Событие началось. Прогноз недоступен.', ToastAndroid.SHORT, ToastAndroid.BOTTOM)
@@ -189,7 +211,21 @@ const Time = ({ timestamp }: { timestamp: string }) => {
 	return <Timer>{time}</Timer>
 }
 
-const DefaultHeaderContainer = styled.View``
+const EndTimeIndicator = ({ color }: { color: string }) => {
+	return (
+		<Svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+			<Circle cx="5" cy="5" r="5" fill={color} />
+		</Svg>
+	)
+}
+const EndTimeTitle = styled.Text`
+	font-family: Poppins-SemiBold;
+	font-size: 20px;
+	color: #ffffff;
+`
+const DefaultHeaderContainer = styled.View`
+	flex-grow: 1;
+`
 const DefaultImageHeader = styled.Image`
 	width: 100%;
 	height: 309px;
@@ -201,11 +237,13 @@ const LeagueContainer = styled.View`
 	border-bottom-width: 1px;
 	border-bottom-color: #25262c;
 	flex-direction: row;
+	align-items: center;
 `
 const LeagueText = styled.Text`
 	font-family: Inter-Regular;
 	font-size: 10px;
 	color: #ffffff;
+	flex: 1;
 `
 const SportIcon = styled.Image`
 	width: 16px;
@@ -226,7 +264,7 @@ const DefaultCommandImage = styled.Image`
 `
 const DefaultCommandView = styled.View`
 	flex-direction: column;
-	flex-grow: 1;
+	flex: 1;
 `
 const DefaultCommandName = styled.Text`
 	color: #ffffff;
@@ -234,7 +272,6 @@ const DefaultCommandName = styled.Text`
 	margin-top: 16px;
 	font-family: Inter-SemiBold;
 	font-size: 16px;
-	max-width: 90%;
 `
 const TimerView = styled.View`
 	justify-content: center;
@@ -252,6 +289,7 @@ const TimerDesc = styled.Text`
 	font-size: 10px;
 	line-height: 10px;
 	color: #ffffff;
+	text-align: center;
 `
 const LeftPanel = () => {
 	return (
@@ -315,6 +353,7 @@ const MeetingStats = ({ route }: Props) => {
 		let percent = 0
 
 		forecast.events[0].history.forEach(result => {
+			if (!result.result) return
 			const [leftRes, rightRes] = result.result.split(':')
 			const compNum = 100 / forecast.events[0].history.length
 
@@ -333,10 +372,10 @@ const MeetingStats = ({ route }: Props) => {
 						<MeetingStatsBlockTitle>
 							<MeetingStatsBlockCommand>
 								<MeetingStatsBlockCommandIcon source={{ uri: forecast.events[0].team_1_logo }} />
-								<MeetingStatsBlockCommandPercent>{computeProgressPercent()}%</MeetingStatsBlockCommandPercent>
+								<MeetingStatsBlockCommandPercent>{computeProgressPercent().toFixed(0)}%</MeetingStatsBlockCommandPercent>
 							</MeetingStatsBlockCommand>
 							<MeetingStatsBlockCommand>
-								<MeetingStatsBlockCommandPercent>{100 - computeProgressPercent()}%</MeetingStatsBlockCommandPercent>
+								<MeetingStatsBlockCommandPercent>{(100 - computeProgressPercent()).toFixed(0)}%</MeetingStatsBlockCommandPercent>
 								<MeetingStatsBlockCommandIcon source={{ uri: forecast.events[0].team_2_logo }} />
 							</MeetingStatsBlockCommand>
 						</MeetingStatsBlockTitle>
@@ -345,12 +384,34 @@ const MeetingStats = ({ route }: Props) => {
 				</MeetingStatsBlockHeader>
 				<MeetingStatsBlockBody>
 					{forecast.events[0].history.length
-						? forecast.events[0].history.map(event => {
+						? forecast.events[0].history.map((event, index) => {
+								if (!event.date) return
+
+								const [leftRes, rightRes] = event.result.split(':')
+								const [leftTeam, rightTeam] = event.teams.split(' - ')
+
 								return (
-									<MeetingStatsLineView key={event.date}>
+									<MeetingStatsLineView key={event.date} style={{ marginBottom: index < forecast.events[0].history.length - 1 ? 16 : 0 }}>
 										<MeetingStatsLineDate>{event.date.split('-').slice(1).join('/')}</MeetingStatsLineDate>
-										<MeetingStatsLineCommands>{event.teams}</MeetingStatsLineCommands>
-										<MeetingStatsLineScore>{event.result}</MeetingStatsLineScore>
+
+										{/* <MeetingStatsLineCommands>{event.teams}</MeetingStatsLineCommands> */}
+										<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+											<View style={{ alignItems: 'flex-end', flex: 1 }}>
+												<MeetingStatsLineCommands style={{ flex: 1 }}>{leftTeam}</MeetingStatsLineCommands>
+											</View>
+
+											<MeetingStatsLineCommands style={{ width: 16 }}> - </MeetingStatsLineCommands>
+
+											<View style={{ alignItems: 'flex-start', flex: 1 }}>
+												<MeetingStatsLineCommands style={{ flex: 1 }}>{rightTeam}</MeetingStatsLineCommands>
+											</View>
+										</View>
+
+										<View style={{ flexDirection: 'row', justifyContent: 'center', width: 26 }}>
+											<MeetingStatsLineScore>{leftRes}</MeetingStatsLineScore>
+											<MeetingStatsLineScore>:</MeetingStatsLineScore>
+											<MeetingStatsLineScore>{rightRes}</MeetingStatsLineScore>
+										</View>
 									</MeetingStatsLineView>
 								)
 						  })
@@ -370,7 +431,6 @@ const Progress = styled(ProgressBar)`
 
 const MeetingStatsContainer = styled.View`
 	padding: 0 16px;
-	width: 100%;
 	flex-direction: column;
 	margin-bottom: 16px;
 `
@@ -422,13 +482,13 @@ const MeetingStatsLineDate = styled.Text`
 	font-family: Inter-Regular;
 	font-size: 14px;
 	color: #8f919c;
+	min-width: 44px;
 `
 const MeetingStatsLineCommands = styled.Text`
 	font-family: Inter-SemiBold;
 	font-size: 14px;
 	color: #ffffff;
 	text-align: center;
-	max-width: 80%;
 `
 const MeetingStatsLineScore = styled.Text`
 	font-family: Inter-Regular;
@@ -442,8 +502,6 @@ const LastForecastsHistory = ({ data, logo, name }: any) => {
 	const commandName = name as string
 
 	const [show, setShow] = React.useState(false)
-
-	console.log(lastGames)
 
 	return (
 		<LastForecastsStatsBlock>
@@ -465,22 +523,27 @@ const LastForecastsHistory = ({ data, logo, name }: any) => {
 				)}
 				renderContent={() => (
 					<MeetingStatsBlockBody style={{ paddingTop: 0 }}>
-						{lastGames.map(event => {
-							const computeIndicatorColor = (): string => {
-								const [leftRes, rightRes] = event.result.split(':')
+						{lastGames.map((event, index) => {
+							if (!event.date) return
+							const [leftRes, rightRes] = event.result.split(':')
 
+							const computeIndicatorColor = (): string => {
 								if (leftRes > rightRes) return colors.card.green
 								if (leftRes < rightRes) return colors.card.red
 								return '#FFB92E'
 							}
 
 							return (
-								<MeetingStatsLineView key={event.date + event.teams}>
+								<MeetingStatsLineView key={event.date + event.teams} style={{ marginBottom: index < lastGames.length - 1 ? 16 : 0 }}>
 									<MeetingStatsLineDate>{event.date.split('-').slice(1).join('/')}</MeetingStatsLineDate>
 									<MeetingStatsLineCommands>{event.teams}</MeetingStatsLineCommands>
 									<ScoreBlock>
 										<Indicator color={computeIndicatorColor()} />
-										<MeetingStatsLineScore>{event.result}</MeetingStatsLineScore>
+										<View style={{ flexDirection: 'row', justifyContent: 'center', width: 26 }}>
+											<MeetingStatsLineScore>{leftRes}</MeetingStatsLineScore>
+											<MeetingStatsLineScore>:</MeetingStatsLineScore>
+											<MeetingStatsLineScore>{rightRes}</MeetingStatsLineScore>
+										</View>
 									</ScoreBlock>
 								</MeetingStatsLineView>
 							)
@@ -526,6 +589,7 @@ const LastForecastsStatsBlock = styled.View`
 	margin-top: 12px;
 	overflow: hidden;
 	margin: 8px 16px 0;
+	background-color: #1b1c21;
 `
 const LastForecastsBlockHeader = styled.View`
 	background-color: #1b1c21;
@@ -536,7 +600,10 @@ const ForecastEvent = ({ text }: { text: string }) => {
 	return (
 		<ForecastEventBlock>
 			<ForecastEventTitle>Прогноз события</ForecastEventTitle>
-			<ForecastEventBody>{text}</ForecastEventBody>
+			<ForecastEventBody>
+				{/** dataDetectorType={'link'} */}
+				{text}
+			</ForecastEventBody>
 		</ForecastEventBlock>
 	)
 }
@@ -566,18 +633,59 @@ const ForecastEventBody = styled.Text`
 const ExpressHeader = ({ route }: Props) => {
 	const { forecast } = route.params
 
+	const getStatusText = () => {
+		if (forecast.status === 'passed') return 'ПРОШЕЛ'
+		if (forecast.status === 'failed') return 'НЕ ПРОШЕЛ'
+		if (forecast.status === 'returned') return 'ВОЗВРАТ'
+		return ''
+	}
+
 	return (
 		<ExpressHeaderView>
-			<ExpressHeaderViewCoeff>
-				<ExpressCoefData>~{forecast.coefficient}</ExpressCoefData>
-				<ExpressCoefTitle>коэфф..</ExpressCoefTitle>
-			</ExpressHeaderViewCoeff>
-			<ExpressHeaderViewSeparator />
-			<ExpressHeaderViewTimer>
-				<Time timestamp={forecast.released_at} />
-				<ExpressCoefTitle>начало через</ExpressCoefTitle>
-			</ExpressHeaderViewTimer>
+			{!forecast.status ? (
+				<>
+					<ExpressHeaderViewCoeff>
+						<ExpressCoefData>~{forecast.coefficient}</ExpressCoefData>
+						<ExpressCoefTitle>коэфф..</ExpressCoefTitle>
+					</ExpressHeaderViewCoeff>
+					<ExpressHeaderViewSeparator />
+					<ExpressHeaderViewTimer>
+						{moment().diff(forecast.released_at) < 0 ? (
+							<>
+								<Time timestamp={forecast.released_at} subscribeType={forecast.subscribe_type} />
+								<ExpressCoefTitle>начало через</ExpressCoefTitle>
+							</>
+						) : (
+							<ExpressCoefTitle>Ожидает{'\n'}результатов</ExpressCoefTitle>
+						)}
+					</ExpressHeaderViewTimer>
+				</>
+			) : (
+				<ExpressEndView>
+					<ExpressEndIndicator color={colors.card[forecast.status]} />
+					<ExpressEndTitle>{getStatusText()}</ExpressEndTitle>
+				</ExpressEndView>
+			)}
 		</ExpressHeaderView>
+	)
+}
+
+const ExpressEndView = styled.View`
+	flex-direction: row;
+	align-items: center;
+`
+const ExpressEndTitle = styled.Text`
+	color: #ffffff;
+	font-family: Poppins-SemiBold;
+	font-size: 14px;
+	line-height: 20px;
+	margin-left: 6px;
+`
+const ExpressEndIndicator = ({ color }: { color: string }) => {
+	return (
+		<Svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+			<Circle cx="5" cy="5" r="5" fill={color} />
+		</Svg>
 	)
 }
 const ExpressHeaderView = styled.View`
@@ -644,7 +752,7 @@ const ExpressForecast = ({ route }: Props) => {
 
 const ExpressForecastView = styled.View`
 	position: relative;
-	min-height: ${Dimensions.get('screen').height - 210 - 56}px;
+	flex-grow: 1;
 `
 const ExpressForecastBg = styled.Image`
 	width: 100%;

@@ -3,7 +3,9 @@ import { makeAutoObservable, runInAction } from 'mobx'
 import axios from 'axios'
 import Constants from 'expo-constants'
 
-const apiHostUri = 'http://betanalitycs.xyz'
+export const apiHostUri = 'http://89.223.71.72'
+
+console.log(Constants.deviceId)
 
 class API {
 	request: ApisauceInstance | undefined = undefined
@@ -16,7 +18,7 @@ class API {
 	async login() {
 		await axios
 			.post(apiHostUri + '/api/app/login', {
-				device_id: '123', // Constants.deviceId,
+				device_id: Constants.deviceId,
 			})
 			.then(response => {
 				runInAction(() => {

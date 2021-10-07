@@ -4,31 +4,34 @@ import { observer } from 'mobx-react-lite'
 import styled from 'styled-components/native'
 import Svg, { Circle, Path } from 'react-native-svg'
 import colors from '../constants/colors'
-import { ExpressType } from '../store/forecasts'
+import forecasts, { ExpressType } from '../store/forecasts'
 import moment from 'moment'
+import { SkeletonImage } from './SkeletonImage'
 
 interface Props {
 	forecast: ExpressType
 }
 
 export const ExpressForecastCardFull = observer(({ forecast }: Props) => {
+	const sport = forecasts.getSport(forecast.sport_id)
+
 	return (
 		<Container activeOpacity={1}>
 			<Body>
 				<Content>
 					<ConfrontationContainer>
 						<ConfrontationLeft>
-							<CommandIcon source={{ uri: forecast.team_1_logo }} />
+							<SkeletonImage style={{ width: 64, height: 64 }} uri={forecast.team_1_logo} />
 						</ConfrontationLeft>
 						<ConfrontationCentral>
 							<BallView>
-								<BallIcon source={require('../icons/ball-football.png')} />
+								<BallIcon source={{ uri: sport.icon }} />
 							</BallView>
-							<SportName>{forecast.sport_id}</SportName>
+							<SportName>{sport.name.toUpperCase()}</SportName>
 							<CommandNames>{forecast.league}</CommandNames>
 						</ConfrontationCentral>
 						<ConfrontationRight>
-							<CommandIcon source={{ uri: forecast.team_2_logo }} />
+							<SkeletonImage style={{ width: 64, height: 64 }} uri={forecast.team_2_logo} />
 						</ConfrontationRight>
 					</ConfrontationContainer>
 					<CommandNamesContainer>

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { setStatusBarStyle } from 'expo-status-bar'
 
 import styled from 'styled-components/native'
+import { StyleSheet, View } from 'react-native'
 
 interface Props {}
 

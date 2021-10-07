@@ -1,33 +1,44 @@
 import React from 'react'
-import { LogBox } from 'react-native'
+import { LogBox, StyleSheet, Text, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
-import { SplashLoader } from './src/components/components'
+import { SplashLoader, SubscribePlan } from './src/components/components'
 import { enableScreens } from 'react-native-screens'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import * as Updates from 'expo-updates'
 import Constants from 'expo-constants'
 import { useFonts } from 'expo-font'
-import { BottomNavigation } from './src/navigations/BottomNavigation'
+import { Navigation } from './src/navigations/Navigation'
 import { observer } from 'mobx-react-lite'
 import API from './src/store/api'
 import forecasts from './src/store/forecasts'
 import 'moment/locale/ru'
 import colors from './src/constants/colors'
+import news from './src/store/news'
+import onloadapp from './src/store/onloadapp'
+import settings from './src/store/settings'
+import faq from './src/store/faq'
+import { BottomSheet } from './src/components/BottomSheet/BottomSheet'
+import { OneBuy } from './src/components/OneBuy'
+import { LockedBuy } from './src/components/LockedBuy'
+import { NoConnection } from './src/components/NoConnection'
+import callBottomSheeet from './src/components/BottomSheet/callBottomSheeet'
+import NetInfo from '@react-native-community/netinfo'
+import { runInAction } from 'mobx'
+import connection from './src/store/connection'
 
-enableScreens()
-// LogBox.ignoreAllLogs()
+// enableScreens()
 
-async function checkUpdates() {
-	const { isAvailable } = await Updates.checkForUpdateAsync()
+// async function checkUpdates() {
+// 	const { isAvailable } = await Updates.checkForUpdateAsync()
 
-	if (isAvailable) {
-		await Updates.fetchUpdateAsync()
-		Updates.reloadAsync()
-	}
-}
-if (!Constants?.manifest?.packagerOpts?.dev) {
-	checkUpdates()
-}
+// 	if (isAvailable) {
+// 		await Updates.fetchUpdateAsync()
+// 		Updates.reloadAsync()
+// 	}
+// }
+// if (!Constants?.manifest?.packagerOpts?.dev) {
+// 	checkUpdates()
+// }
 
 const App = observer(() => {
 	const [fontsLoaded] = useFonts({
@@ -61,22 +72,71 @@ const App = observer(() => {
 		'Poppins-ThinItalic': require('./src/fonts/poppins/Poppins-ThinItalic.ttf'),
 	})
 
+	;(Text as any).defaultProps = { ...(Text as any).defaultProps, allowFontScaling: false }
+
+	const getData = () => {
+		NetInfo.fetch()
+			.then(r => {
+				if (!r.isConnected) {
+					callBottomSheeet.connectionRef?.current?.open()
+					setTimeout(() => {
+						getData()
+					}, 1000)
+					return
+				}
+
+				API.login().then(() => {
+					callBottomSheeet.connectionRef?.current?.close()
+					settings.getSettings()
+					forecasts.getForecasts()
+					forecasts.getArchive()
+					forecasts.getSports()
+					news.getNews()
+					faq.getFaq()
+				})
+			})
+			.catch(e => e)
+	}
+
 	React.useEffect(() => {
-		API.login().then(() => {
-			forecasts.getForecasts()
-		})
+		getData()
 	}, [])
 
-	if (!fontsLoaded || !API.token || !forecasts.forecasts) return <SplashLoader />
-
-	// forecasts.getArchive().then(resp => console.log(resp))
+	if (!fontsLoaded) return <></>
 
 	return (
 		<SafeAreaProvider style={{ backgroundColor: colors.background }}>
-			<BottomNavigation />
-			<StatusBar backgroundColor="#1B1C21" style="light" />
+			<BottomSheet>
+				<SubscribePlan />
+			</BottomSheet>
+			<BottomSheet buy>
+				<OneBuy />
+			</BottomSheet>
+			<BottomSheet locked>
+				<LockedBuy />
+			</BottomSheet>
+			<BottomSheet connection>
+				<NoConnection />
+			</BottomSheet>
+			{forecasts.sports && settings.settings ? <Navigation /> : null}
+			<Splash />
 		</SafeAreaProvider>
 	)
+})
+
+const Splash = observer(() => {
+	if (
+		!API.token ||
+		!forecasts.forecasts ||
+		!forecasts.archive ||
+		// !forecasts.sports ||
+		// !settings.settings ||
+		!faq.data ||
+		!onloadapp.onLoad
+	) {
+		return <SplashLoader />
+	}
+	return <StatusBar backgroundColor="#1B1C21" style="light" />
 })
 
 export default App

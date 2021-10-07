@@ -4,6 +4,8 @@ import { observer } from 'mobx-react-lite'
 import styled from 'styled-components/native'
 import Svg, { Circle, Path } from 'react-native-svg'
 import colors from '../constants/colors'
+import onloadapp from '../store/onloadapp'
+import callBottomSheeet from './BottomSheet/callBottomSheeet'
 
 interface Props {
 	headerType?: ''
@@ -11,16 +13,16 @@ interface Props {
 
 export const SubscribeCard = observer(({}: Props) => {
 	return (
-		<Container activeOpacity={1}>
+		<Container activeOpacity={1} onPress={() => callBottomSheeet.ref?.current?.open()}>
 			<CapContainer>
 				<Cap color="#FFD058" />
 			</CapContainer>
 			<Body>
 				<Header>
-					<Title>Subscribe</Title>
+					<Title>Еще не подписан?</Title>
 					<Arrow />
 				</Header>
-				<Description>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Eget ultrices eu elementum.</Description>
+				<Description>Платная подписка на прогнозы сильно расширит твои финансовые границы и возможности.</Description>
 			</Body>
 			<BgImage source={require('../icons/cards/subscribe.png')} />
 			<BottomCapContainer>
@@ -50,13 +52,14 @@ const BottomCapContainer = styled.View`
 	padding: 0 4px;
 	height: 9px;
 	width: 100%;
-	bottom: 0px;
+	bottom: -1px;
 `
 const Body = styled.View`
 	padding: 16px;
 	background-color: #ffd058;
 	border-radius: 8px;
-	height: 122px;
+	min-height: 122px;
+	max-height: 160px;
 `
 const BgImage = styled.Image`
 	position: absolute;

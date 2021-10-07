@@ -5,13 +5,14 @@ import styled from 'styled-components/native'
 import CalendarStrip from 'react-native-calendar-strip'
 import moment from 'moment'
 import state from './calendar.state'
+import forecasts from '../../store/forecasts'
 
 interface Props {}
 
 export const Calendar = observer(({}: Props) => {
 	React.useEffect(() => {
-		state.setSelectedDate(moment().toISOString())
-	}, [])
+		state.setSelectedDate(moment(forecasts.archive?.data.length ? forecasts.archive.data[0].released_at : undefined).toISOString())
+	})
 
 	return (
 		<Container>
@@ -21,8 +22,9 @@ export const Calendar = observer(({}: Props) => {
 			<CalendarContainer>
 				<CalendarStrip
 					onDateSelected={date => {
-						// console.log(date)
+						// console.log(date.toISOString())
 						state.setSelectedDate(date.toISOString())
+						state.setDate(state.selectedDate)
 					}}
 					scrollable
 					style={{ height: 53, borderWidth: 0 }}
@@ -38,7 +40,8 @@ export const Calendar = observer(({}: Props) => {
 					scrollToOnSetSelectedDate={false}
 					iconContainer={{ width: 0 }}
 					iconStyle={{ display: 'none' }}
-					selectedDate={moment()}
+					selectedDate={moment(forecasts.archive?.data.length ? forecasts.archive.data[0].released_at : undefined)}
+					// selectedDate={moment(state.date)}
 					onWeekChanged={e => {
 						state.setName(moment(e).format('MMMM'))
 					}}

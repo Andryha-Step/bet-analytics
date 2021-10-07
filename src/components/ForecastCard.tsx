@@ -4,9 +4,11 @@ import { observer } from 'mobx-react-lite'
 import styled from 'styled-components/native'
 import Svg, { Circle, Path } from 'react-native-svg'
 import colors from '../constants/colors'
-import { Daum2 } from '../store/forecasts'
+import forecasts, { Daum2 } from '../store/forecasts'
 import moment from 'moment'
 import { useNavigation } from '@react-navigation/native'
+import { SkeletonImage } from './SkeletonImage'
+import callBottomSheeet from './BottomSheet/callBottomSheeet'
 
 interface Props {
 	forecast: Daum2
@@ -21,64 +23,76 @@ export const ForecastCard = observer(({ forecast }: Props) => {
 	const dateMonth = monthFirstSymbol + monthLet
 
 	const navigation = useNavigation()
+	const sport = forecasts.getSport(forecast.events[0].sport_id)
 
 	return (
-		<Container activeOpacity={1} onPress={() => navigation.navigate('Forecast' as never, { forecast } as never)}>
-			<CapContainer>
-				<Cap color={colors.card.default} />
-			</CapContainer>
-			<Body>
-				<DateContainer>
-					<DateTime>
-						<DateText>{dateTime}</DateText>
-					</DateTime>
-					<DateDay>
-						<DateText>
-							{dateDay} {dateMonth}
-						</DateText>
-					</DateDay>
-				</DateContainer>
-				<ConfrontationContainer>
-					<ConfrontationLeft>
-						<CommandIcon source={{ uri: forecast.events[0].team_1_logo }} />
-					</ConfrontationLeft>
-					<ConfrontationCentral>
-						<BallIcon source={require('../icons/ball-football.png')} />
-						<SportName>{forecast.events[0].sport_id}</SportName>
-						<CommandNames>{forecast.events[0].league}</CommandNames>
-					</ConfrontationCentral>
-					<ConfrontationRight>
-						<CommandIcon source={{ uri: forecast.events[0].team_2_logo }} />
-					</ConfrontationRight>
-				</ConfrontationContainer>
-				<CommandNamesContainer>
-					<CommandNameLeft>{forecast.events[0].team_1_name}</CommandNameLeft>
-					<CommandNameRight>{forecast.events[0].team_2_name}</CommandNameRight>
-				</CommandNamesContainer>
-				<CoefContainer>
-					<CoefLeft>
-						<LeftPanel />
-						<CoefTitle>КОЭФФИЦИЕНТ</CoefTitle>
-						<CoefData>~{forecast.events[0].coefficient}</CoefData>
-					</CoefLeft>
-					<CoefRight>
-						<RightPanel />
-						<CoefTitle>СТАВКА</CoefTitle>
-						<CoefData>{forecast.events[0].result}</CoefData>
-					</CoefRight>
-				</CoefContainer>
-			</Body>
+		<>
+			<Container
+				activeOpacity={1}
+				onPress={() => {
+					if (moment().diff(forecast.released_at) > 0 && forecast.subscribe_type !== 'free') {
+						callBottomSheeet.lockedRef?.current?.open()
+						return
+					}
+					navigation.navigate('Forecast' as never, { forecast } as never)
+				}}
+			>
+				<CapContainer>
+					<Cap color={colors.card.default} />
+				</CapContainer>
+				<Body>
+					<DateContainer>
+						<DateTime>
+							<DateText>{dateTime}</DateText>
+						</DateTime>
+						<DateDay>
+							<DateText>
+								{dateDay} {dateMonth}
+							</DateText>
+						</DateDay>
+					</DateContainer>
+					<ConfrontationContainer>
+						<ConfrontationLeft>
+							<SkeletonImage uri={forecast.events[0].team_1_logo} style={{ width: 64, height: 64 }} />
+						</ConfrontationLeft>
+						<ConfrontationCentral>
+							<SkeletonImage uri={sport.icon} style={{ width: 24, height: 24, borderRadius: 24 }} />
+							<SportName>{sport.name.toUpperCase()}</SportName>
+							<CommandNames>{forecast.events[0].league}</CommandNames>
+						</ConfrontationCentral>
+						<ConfrontationRight>
+							<SkeletonImage uri={forecast.events[0].team_2_logo} style={{ width: 64, height: 64 }} />
+						</ConfrontationRight>
+					</ConfrontationContainer>
+					<CommandNamesContainer>
+						<CommandNameLeft>{forecast.events[0].team_1_name}</CommandNameLeft>
+						<CommandNameRight>{forecast.events[0].team_2_name}</CommandNameRight>
+					</CommandNamesContainer>
+					<CoefContainer>
+						<CoefLeft>
+							<LeftPanel />
+							<CoefTitle>КОЭФФИЦИЕНТ</CoefTitle>
+							<CoefData>~{forecast.events[0].coefficient}</CoefData>
+						</CoefLeft>
+						<CoefRight>
+							<RightPanel />
+							<CoefTitle>СТАВКА</CoefTitle>
+							<CoefData>{forecast.events[0].result}</CoefData>
+						</CoefRight>
+					</CoefContainer>
+				</Body>
 
-			<BottomCapContainer>
-				<Cap color="#060607" />
-			</BottomCapContainer>
-			<StatusTitleContainer>
-				<StatusTitle>
-					<StatusTitleBg />
-					<StatusTitleText>{forecast.subscribe_type.toUpperCase()}</StatusTitleText>
-				</StatusTitle>
-			</StatusTitleContainer>
-		</Container>
+				<BottomCapContainer>
+					<Cap color="#060607" />
+				</BottomCapContainer>
+				<StatusTitleContainer>
+					<StatusTitle>
+						<StatusTitleBg />
+						<StatusTitleText>{forecast.subscribe_type.toUpperCase()}</StatusTitleText>
+					</StatusTitle>
+				</StatusTitleContainer>
+			</Container>
+		</>
 	)
 })
 
@@ -101,7 +115,7 @@ const BottomCapContainer = styled.View`
 	position: absolute;
 	height: 9px;
 	width: 100%;
-	bottom: 0px;
+	bottom: -1px;
 `
 const Body = styled.View`
 	padding: 16px;
@@ -166,10 +180,6 @@ const ConfrontationCentral = styled.View`
 	flex-direction: column;
 `
 const ConfrontationRight = styled.View``
-const CommandIcon = styled.Image`
-	width: 64px;
-	height: 64px;
-`
 const BallIcon = styled.Image`
 	width: 24px;
 	height: 24px;
@@ -187,6 +197,8 @@ const CommandNames = styled.Text`
 	font-family: Inter-Medium;
 	font-size: 8px;
 	line-height: 8px;
+	text-align: center;
+	max-width: 60%;
 `
 const CommandNamesContainer = styled.View`
 	flex-direction: row;

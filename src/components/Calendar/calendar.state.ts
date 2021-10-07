@@ -3,6 +3,7 @@ import { makeAutoObservable } from 'mobx'
 class Calendar {
 	name: string = ''
 	selectedDate: string = ''
+	date: string = ''
 
 	constructor() {
 		makeAutoObservable(this)
@@ -14,6 +15,10 @@ class Calendar {
 
 	setSelectedDate(date: string) {
 		this.selectedDate = date
+	}
+
+	setDate(date: string) {
+		this.date = date
 	}
 }
 
