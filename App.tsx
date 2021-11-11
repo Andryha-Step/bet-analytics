@@ -25,20 +25,32 @@ import callBottomSheeet from './src/components/BottomSheet/callBottomSheeet'
 import NetInfo from '@react-native-community/netinfo'
 import { runInAction } from 'mobx'
 import connection from './src/store/connection'
+import products from './src/store/products'
+import * as InAppPurchases from 'expo-in-app-purchases'
 
 // enableScreens()
 
-// async function checkUpdates() {
-// 	const { isAvailable } = await Updates.checkForUpdateAsync()
+async function checkUpdates() {
+	const { isAvailable } = await Updates.checkForUpdateAsync()
 
-// 	if (isAvailable) {
-// 		await Updates.fetchUpdateAsync()
-// 		Updates.reloadAsync()
-// 	}
-// }
-// if (!Constants?.manifest?.packagerOpts?.dev) {
-// 	checkUpdates()
-// }
+	if (isAvailable) {
+		await Updates.fetchUpdateAsync()
+		Updates.reloadAsync()
+	}
+}
+if (!Constants?.manifest?.packagerOpts?.dev) {
+	checkUpdates()
+}
+
+const purchase = {
+	orderId: '',
+	packageName: '',
+	productId: '',
+	purchaseTime: 12312,
+	purchaseState: 1,
+	// developerPayload: ''
+	purchaseToken: '',
+}
 
 const App = observer(() => {
 	const [fontsLoaded] = useFonts({
@@ -100,6 +112,50 @@ const App = observer(() => {
 
 	React.useEffect(() => {
 		getData()
+
+		products.initProductList().then(() => {
+			InAppPurchases.setPurchaseListener(({ responseCode, results, errorCode }) => {
+				// Purchase was successful
+				if (responseCode === InAppPurchases.IAPResponseCode.OK) {
+					console.log(JSON.stringify(results, null, 2))
+					results?.forEach(purchase => {
+						if (!purchase.acknowledged) {
+							alert(`Куплена подписка ${purchase.productId}\n\n${JSON.stringify(purchase)}`)
+							// Process transaction here and unlock content...
+
+							// Then when you're done
+							InAppPurchases.finishTransactionAsync(purchase, true)
+						}
+					})
+
+					return
+				}
+
+				if (responseCode === InAppPurchases.IAPResponseCode.USER_CANCELED) {
+					alert('Вы отменили транзакцию')
+					return
+				}
+
+				if (errorCode === 0) return alert('Произошла неизвестная или непредвиденная ошибка.')
+				if (errorCode === 1)
+					return alert('Функция не разрешена на текущем устройстве, или пользователь не авторизован для совершения платежей.')
+				if (errorCode === 2) return alert('Сервис Play Store сейчас не подключен.')
+				if (errorCode === 3) return alert('Сетевое соединение не работает.')
+				if (errorCode === 4) return alert('Время ожидания запроса истекло, прежде чем Google Play ответит.')
+				if (errorCode === 5) return alert('Версия Billing API не поддерживается для запрошенного типа.')
+				if (errorCode === 6) return alert('Запрошенный товар недоступен для покупки.')
+				if (errorCode === 7) return alert('API предоставлены неверные аргументы.')
+				if (errorCode === 8) return alert('Невозможность покупки, поскольку товар уже принадлежит.')
+				if (errorCode === 9) return alert('Отказ от потребления, поскольку предмет не принадлежит.')
+				if (errorCode === 10) return alert('Ошибка подключения Apple Cloud Service или недопустимые разрешения.')
+				if (errorCode === 11) return alert('Пользователь еще не подтвердил политику конфиденциальности Apple для Apple Music.')
+				if (errorCode === 12) return alert('Приложение пытается использовать свойство, для которого у него нет необходимых прав.')
+				if (errorCode === 13) return alert('Идентификатор предложения или цена, указанные в App Store Connect, больше не действительны.')
+				if (errorCode === 14) return alert('Отсутствуют параметры при оплате скидки.')
+
+				alert(`Что-то пошло не так, код ошибки: ${errorCode}`)
+			})
+		})
 	}, [])
 
 	if (!fontsLoaded) return <></>

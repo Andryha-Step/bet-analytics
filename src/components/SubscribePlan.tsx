@@ -3,6 +3,9 @@ import { observer } from 'mobx-react-lite'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { ProfileCard } from './profile/ProfileCard'
 import Svg, { Path } from 'react-native-svg'
+import products from '../store/products'
+import moment from 'moment'
+import * as InAppPurchases from 'expo-in-app-purchases'
 
 interface Props {}
 
@@ -30,18 +33,92 @@ interface Plan {
 
 const Plan = ({ type, goBack }: Plan) => {
 	const [period, setPeriod] = React.useState([
-		{ id: 1, title: '3 месяца - 352 р', desc: 'До 28 августа 2021', selected: false },
-		{ id: 2, title: '6 месяца - 352 р', desc: 'До 28 августа 2021', selected: false },
-		{ id: 3, title: '1 год - 352 р', desc: 'До 28 августа 2022', selected: false },
+		{ id: '1', title: 'undefined', desc: 'undefined', selected: false },
+		{ id: '2', title: 'undefined', desc: 'undefined', selected: false },
+		{ id: '3', title: 'undefined', desc: 'undefined', selected: false },
 	])
 
-	const selectPeriod = (id: number) => {
+	const [selectedPeriod, setSelectedPeriod] = React.useState('')
+
+	React.useEffect(() => {
+		if (type === 'lite')
+			setPeriod(
+				products.liteSubscribeList?.map((product, index) => ({
+					id: product.productId,
+					title: `${getTitlePeriod(product.subscriptionPeriod)} - ${getDisplayPrice(product.priceAmountMicros)} р`,
+					desc: `До ${getDisplayPeriod(product.subscriptionPeriod)}`,
+					selected: false,
+				})) || []
+			)
+
+		if (type === 'pro')
+			setPeriod(
+				products.proSubscribeList?.map((product, index) => ({
+					id: product.productId,
+					title: `${getTitlePeriod(product.subscriptionPeriod)} - ${getDisplayPrice(product.priceAmountMicros)} р`,
+					desc: `До ${getDisplayPeriod(product.subscriptionPeriod)}`,
+					selected: false,
+				})) || []
+			)
+
+		if (type === 'full')
+			setPeriod(
+				products.fullSubscribeList?.map((product, index) => ({
+					id: product.productId,
+					title: `${getTitlePeriod(product.subscriptionPeriod)} - ${getDisplayPrice(product.priceAmountMicros)} р`,
+					desc: `До ${getDisplayPeriod(product.subscriptionPeriod)}`,
+					selected: false,
+				})) || []
+			)
+	}, [])
+
+	const getDisplayPrice = (price: number): string => {
+		if (typeof price === 'number') {
+			return (price / 1000000).toFixed(0).toString()
+		}
+
+		return '???'
+	}
+
+	const getTitlePeriod = (period?: string) => {
+		if (typeof period === 'string') {
+			if (period === 'P1Y') return '1 год'
+			if (period === 'P1M') return '1 месяц'
+			if (period === 'P1W') return '7 дней'
+			return '???'
+		}
+		return '???'
+	}
+
+	const getDisplayPeriod = (period?: string): string => {
+		if (typeof period === 'string') {
+			if (period === 'P1Y') return moment().add(1, 'year').format('LL').slice(0, -3)
+			if (period === 'P1M') return moment().add(1, 'month').format('LL').slice(0, -3)
+			if (period === 'P1W') return moment().add(7, 'days').format('LL').slice(0, -3)
+			return '???'
+		}
+		return '???'
+	}
+
+	const selectPeriod = (id: string) => {
 		setPeriod(period =>
 			period.map(plan => {
-				if (plan.id === id) return { ...plan, selected: true }
+				if (plan.id === id) {
+					setSelectedPeriod(plan.id)
+					return { ...plan, selected: true }
+				}
 				return { ...plan, selected: false }
 			})
 		)
+	}
+
+	const buyPurchaseHandler = () => {
+		if (selectedPeriod) {
+			InAppPurchases.purchaseItemAsync(selectedPeriod)
+			return
+		}
+
+		alert('Сначала нужно выбрать период')
 	}
 
 	if (type === 'lite')
@@ -61,7 +138,7 @@ const Plan = ({ type, goBack }: Plan) => {
 				{period.map(({ id, title, desc, selected }) => {
 					return <PlanPeriod key={id} id={id} title={title} description={desc} selected={selected} onPress={() => selectPeriod(id)} />
 				})}
-				<TouchableOpacity style={styles.blueButton}>
+				<TouchableOpacity style={styles.blueButton} onPress={buyPurchaseHandler}>
 					<Text style={styles.blueButtonText}>Оформить</Text>
 				</TouchableOpacity>
 			</>
@@ -84,7 +161,7 @@ const Plan = ({ type, goBack }: Plan) => {
 				{period.map(({ id, title, desc, selected }) => {
 					return <PlanPeriod key={id} id={id} title={title} description={desc} selected={selected} onPress={() => selectPeriod(id)} />
 				})}
-				<TouchableOpacity style={styles.blueButton}>
+				<TouchableOpacity style={styles.blueButton} onPress={buyPurchaseHandler}>
 					<Text style={styles.blueButtonText}>Оформить</Text>
 				</TouchableOpacity>
 			</>
@@ -107,7 +184,7 @@ const Plan = ({ type, goBack }: Plan) => {
 				{period.map(({ id, title, desc, selected }) => {
 					return <PlanPeriod key={id} id={id} title={title} description={desc} selected={selected} onPress={() => selectPeriod(id)} />
 				})}
-				<TouchableOpacity style={styles.blueButton}>
+				<TouchableOpacity style={styles.blueButton} onPress={buyPurchaseHandler}>
 					<Text style={styles.blueButtonText}>Оформить</Text>
 				</TouchableOpacity>
 			</>
@@ -117,7 +194,7 @@ const Plan = ({ type, goBack }: Plan) => {
 }
 
 interface IPlanPeriod {
-	id: number
+	id: string
 	title: string
 	description: string
 	selected: boolean

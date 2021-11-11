@@ -22,7 +22,8 @@
 				"foregroundImage": "./assets/adaptive-icon.png",
 				"backgroundColor": "#000000"
 			},
-			"package": "com.hushpuppy.betanalytics"
+			"package": "com.hushpuppy.betanalytics",
+			"versionCode": 3
 		},
 		"web": {
 			"favicon": "./assets/favicon.png"
