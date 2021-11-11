@@ -13,12 +13,22 @@ import Svg, { Path } from 'react-native-svg'
 import SwitchToggle from 'react-native-switch-toggle'
 import { useNavigation } from '@react-navigation/native'
 import callBottomSheeet from '../components/BottomSheet/callBottomSheeet'
+import PushNotification from 'react-native-push-notification'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 interface Props {}
 
 export const Profile = observer(({}: Props) => {
 	const [notify, setNotify] = React.useState(true)
 	const navigation = useNavigation()
+
+	React.useEffect(() => {
+		AsyncStorage.getItem('notification').then(value => {
+			if (value) {
+				setNotify(JSON.parse(value))
+			}
+		})
+	}, [])
 
 	return (
 		<SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -80,8 +90,19 @@ export const Profile = observer(({}: Props) => {
 							<Switch
 								trackColor={{ false: '#747880', true: '#ffffff' }}
 								thumbColor={notify ? '#2E38E4' : '#B8C1CC'}
-								collapsable={true}
-								onValueChange={() => setNotify(p => !p)}
+								// collapsable={true}
+								onValueChange={async () => {
+									setNotify(p => {
+										return !p
+									})
+									if (!notify) {
+										PushNotification.requestPermissions()
+										await AsyncStorage.setItem('notification', 'true')
+									} else {
+										PushNotification.abandonPermissions()
+										await AsyncStorage.setItem('notification', 'false')
+									}
+								}}
 								value={notify}
 							/>
 						</View>

@@ -4,6 +4,9 @@ import { Image, StyleSheet, Text, View } from 'react-native'
 import { ProfileCard } from './profile/ProfileCard'
 import Svg, { Path } from 'react-native-svg'
 import callBottomSheeet from './BottomSheet/callBottomSheeet'
+import realtimeBuyProduct from '../store/realtimeBuyProduct'
+import products from '../store/products'
+import IAP from 'react-native-iap'
 
 interface Props {}
 
@@ -15,11 +18,29 @@ export const OneBuy = observer(({}: Props) => {
 				<Text style={styles.headerTitle}>Купить прогноз</Text>
 			</View>
 			<View style={styles.body}>
-				<ProfileCard touchable>
+				<ProfileCard
+					touchable
+					onPress={() => {
+						console.log('#' + realtimeBuyProduct.id, realtimeBuyProduct.type)
+						if (typeof realtimeBuyProduct.type === 'string') {
+							IAP.requestPurchase(realtimeBuyProduct.type)
+						} else {
+							alert('Что-то пошло не так')
+						}
+					}}
+				>
 					<View style={styles.cardBody}>
 						<View>
 							<Text style={styles.title}>Единоразовая покупка</Text>
-							<Text style={styles.description}>690 RUB</Text>
+							{products.productList?.map(product => {
+								if (product.productId === realtimeBuyProduct.type)
+									return (
+										<Text key={product.productId} style={styles.description}>
+											{product.price} RUB
+										</Text>
+									)
+								return <React.Fragment key={product.productId}></React.Fragment>
+							})}
 						</View>
 						<Arrow />
 					</View>
@@ -34,8 +55,30 @@ export const OneBuy = observer(({}: Props) => {
 				>
 					<View style={styles.cardBody}>
 						<View>
-							<Text style={styles.title}>Подписка LITE</Text>
-							<Text style={styles.bluePrice}>от 2390 RUB/нед</Text>
+							<Text style={styles.title}>Подписка {realtimeBuyProduct.type === 'lite_forecast' ? 'LITE' : 'PRO'}</Text>
+							{realtimeBuyProduct.type === 'lite_forecast'
+								? products.liteSubscribeList?.map(subscribe => {
+										if (subscribe.subscriptionPeriodAndroid === 'P1W')
+											return (
+												<Text key={subscribe.price} style={styles.bluePrice}>
+													от {subscribe.price} RUB/нед
+												</Text>
+											)
+										return <React.Fragment key={subscribe.productId}></React.Fragment>
+								  })
+								: null}
+
+							{realtimeBuyProduct.type === 'pro_forecast'
+								? products.proSubscribeList?.map(subscribe => {
+										if (subscribe.subscriptionPeriodAndroid === 'P1W')
+											return (
+												<Text key={subscribe.price} style={styles.bluePrice}>
+													от {subscribe.price} RUB/нед
+												</Text>
+											)
+										return <React.Fragment key={subscribe.productId}></React.Fragment>
+								  })
+								: null}
 						</View>
 						<Arrow />
 					</View>

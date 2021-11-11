@@ -8,6 +8,9 @@ import forecasts, { LockedDaum } from '../store/forecasts'
 import moment from 'moment'
 import { useNavigation } from '@react-navigation/native'
 import callBottomSheeet from './BottomSheet/callBottomSheeet'
+import { runInAction } from 'mobx'
+import realtimeBuyProduct from '../store/realtimeBuyProduct'
+import products from '../store/products'
 
 interface Props {
 	forecast: LockedDaum
@@ -30,6 +33,12 @@ export const LockedForecastCard = observer(({ forecast }: Props) => {
 					callBottomSheeet.lockedRef?.current?.open()
 					return
 				}
+				runInAction(() => {
+					realtimeBuyProduct.id = forecast.id
+					realtimeBuyProduct.type =
+						forecast.subscribe_type === 'lite' ? 'lite_forecast' : forecast.subscribe_type === 'pro' ? 'pro_forecast' : undefined
+				})
+
 				callBottomSheeet.buyRef?.current?.open()
 			}}
 		>
@@ -72,7 +81,14 @@ export const LockedForecastCard = observer(({ forecast }: Props) => {
 				</ReturnTitleContainer>
 				<PriceView>
 					<LockSvg />
-					<Price>1234 RUB</Price>
+					{products.productList?.map(product => {
+						if (forecast.subscribe_type === 'pro' && product.productId === 'pro_forecast')
+							return <Price key={product.productId}>{product.price} RUB</Price>
+						if (forecast.subscribe_type === 'lite' && product.productId === 'lite_forecast')
+							return <Price key={product.productId}>{product.price} RUB</Price>
+						return <React.Fragment key={product.productId}></React.Fragment>
+					})}
+
 					<PriceDesc>купить прогноз</PriceDesc>
 				</PriceView>
 			</StatusTitleContainer>

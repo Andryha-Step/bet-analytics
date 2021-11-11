@@ -13,6 +13,7 @@ import settings from '../../store/settings'
 interface Props {}
 
 export const Left = observer(({}: Props) => {
+	console.log('SUBSCRIBE_TYPE:', settings.settings?.subscribe)
 	// React.useEffect(() => {
 	// 	forecasts.getForecasts()
 	// }, [])

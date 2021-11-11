@@ -7,6 +7,7 @@
     "push": "git add -A && git commit -m fix && git push"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.15.11",
     "@react-native-clipboard/clipboard": "^1.8.4",
     "@react-native-community/masked-view": "0.1.10",
     "@react-native-community/netinfo": "^6.0.1",
@@ -17,6 +18,7 @@
     "@react-navigation/native-stack": "^6.1.0",
     "@types/axios": "^0.14.0",
     "@types/react-native-collapsible": "^0.11.0",
+    "@types/react-native-push-notification": "^7.3.3",
     "@types/styled-components-react-native": "^5.1.1",
     "apisauce": "^2.1.1",
     "axios": "^0.21.1",
@@ -37,9 +39,11 @@
     "react-native-device-info": "^8.3.1",
     "react-native-elements": "^3.4.2",
     "react-native-gesture-handler": "~1.10.2",
+    "react-native-iap": "^7.5.0",
     "react-native-linear-gradient": "^2.5.6",
     "react-native-pager-view": "^5.4.0",
     "react-native-paper": "^4.9.2",
+    "react-native-push-notification": "^8.1.1",
     "react-native-raw-bottom-sheet": "^2.2.0",
     "react-native-reanimated": "~2.2.0",
     "react-native-safe-area-context": "3.2.0",

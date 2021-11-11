@@ -5,7 +5,7 @@ import { ProfileCard } from './profile/ProfileCard'
 import Svg, { Path } from 'react-native-svg'
 import products from '../store/products'
 import moment from 'moment'
-import * as InAppPurchases from 'expo-in-app-purchases'
+import IAP from 'react-native-iap'
 
 interface Props {}
 
@@ -45,8 +45,8 @@ const Plan = ({ type, goBack }: Plan) => {
 			setPeriod(
 				products.liteSubscribeList?.map((product, index) => ({
 					id: product.productId,
-					title: `${getTitlePeriod(product.subscriptionPeriod)} - ${getDisplayPrice(product.priceAmountMicros)} р`,
-					desc: `До ${getDisplayPeriod(product.subscriptionPeriod)}`,
+					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} р`,
+					desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
 					selected: false,
 				})) || []
 			)
@@ -55,8 +55,8 @@ const Plan = ({ type, goBack }: Plan) => {
 			setPeriod(
 				products.proSubscribeList?.map((product, index) => ({
 					id: product.productId,
-					title: `${getTitlePeriod(product.subscriptionPeriod)} - ${getDisplayPrice(product.priceAmountMicros)} р`,
-					desc: `До ${getDisplayPeriod(product.subscriptionPeriod)}`,
+					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} р`,
+					desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
 					selected: false,
 				})) || []
 			)
@@ -65,8 +65,8 @@ const Plan = ({ type, goBack }: Plan) => {
 			setPeriod(
 				products.fullSubscribeList?.map((product, index) => ({
 					id: product.productId,
-					title: `${getTitlePeriod(product.subscriptionPeriod)} - ${getDisplayPrice(product.priceAmountMicros)} р`,
-					desc: `До ${getDisplayPeriod(product.subscriptionPeriod)}`,
+					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} р`,
+					desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
 					selected: false,
 				})) || []
 			)
@@ -114,7 +114,7 @@ const Plan = ({ type, goBack }: Plan) => {
 
 	const buyPurchaseHandler = () => {
 		if (selectedPeriod) {
-			InAppPurchases.purchaseItemAsync(selectedPeriod)
+			IAP.requestSubscription(selectedPeriod)
 			return
 		}
 

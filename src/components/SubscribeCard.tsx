@@ -6,6 +6,8 @@ import Svg, { Circle, Path } from 'react-native-svg'
 import colors from '../constants/colors'
 import onloadapp from '../store/onloadapp'
 import callBottomSheeet from './BottomSheet/callBottomSheeet'
+import realtimeBuyProduct from '../store/realtimeBuyProduct'
+import { runInAction } from 'mobx'
 
 interface Props {
 	headerType?: ''
@@ -13,7 +15,12 @@ interface Props {
 
 export const SubscribeCard = observer(({}: Props) => {
 	return (
-		<Container activeOpacity={1} onPress={() => callBottomSheeet.ref?.current?.open()}>
+		<Container
+			activeOpacity={1}
+			onPress={() => {
+				callBottomSheeet.ref?.current?.open()
+			}}
+		>
 			<CapContainer>
 				<Cap color="#FFD058" />
 			</CapContainer>
