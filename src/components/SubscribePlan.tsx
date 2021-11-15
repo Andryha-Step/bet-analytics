@@ -6,6 +6,7 @@ import Svg, { Path } from 'react-native-svg'
 import products from '../store/products'
 import moment from 'moment'
 import IAP from 'react-native-iap'
+import { reportEvent } from '../hooks/yandexMetrica'
 
 interface Props {}
 
@@ -41,11 +42,12 @@ const Plan = ({ type, goBack }: Plan) => {
 	const [selectedPeriod, setSelectedPeriod] = React.useState('')
 
 	React.useEffect(() => {
+		reportEvent(`Выбрал тип подписки "${type.toUpperCase()}"`)
 		if (type === 'lite')
 			setPeriod(
 				products.liteSubscribeList?.map((product, index) => ({
 					id: product.productId,
-					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} р`,
+					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} ${product.currency}`,
 					desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
 					selected: false,
 				})) || []
@@ -55,7 +57,7 @@ const Plan = ({ type, goBack }: Plan) => {
 			setPeriod(
 				products.proSubscribeList?.map((product, index) => ({
 					id: product.productId,
-					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} р`,
+					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} ${product.currency}`,
 					desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
 					selected: false,
 				})) || []
@@ -65,7 +67,7 @@ const Plan = ({ type, goBack }: Plan) => {
 			setPeriod(
 				products.fullSubscribeList?.map((product, index) => ({
 					id: product.productId,
-					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} р`,
+					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} ${product.currency}`,
 					desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
 					selected: false,
 				})) || []
@@ -105,6 +107,11 @@ const Plan = ({ type, goBack }: Plan) => {
 			period.map(plan => {
 				if (plan.id === id) {
 					setSelectedPeriod(plan.id)
+					reportEvent(
+						`Выбрал подписку ${JSON.stringify({
+							id: plan.id,
+						})}`
+					)
 					return { ...plan, selected: true }
 				}
 				return { ...plan, selected: false }
@@ -114,6 +121,7 @@ const Plan = ({ type, goBack }: Plan) => {
 
 	const buyPurchaseHandler = () => {
 		if (selectedPeriod) {
+			reportEvent(`Оформляет подписку "${selectedPeriod}""`)
 			IAP.requestSubscription(selectedPeriod)
 			return
 		}

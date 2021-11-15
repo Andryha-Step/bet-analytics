@@ -9,6 +9,7 @@ import moment from 'moment'
 import { useNavigation } from '@react-navigation/native'
 import { SkeletonImage } from './SkeletonImage'
 import callBottomSheeet from './BottomSheet/callBottomSheeet'
+import { reportPastForecast } from '../hooks/yandexMetrica'
 
 interface Props {
 	forecast: Daum
@@ -28,6 +29,11 @@ export const ExpressForecastCard = observer(({ forecast }: Props) => {
 			activeOpacity={1}
 			onPress={() => {
 				if (moment().diff(forecast.released_at) > 0 && forecast.subscribe_type !== 'free') {
+					reportPastForecast(
+						JSON.stringify({
+							id: forecast.id,
+						})
+					)
 					callBottomSheeet.lockedRef?.current?.open()
 					return
 				}

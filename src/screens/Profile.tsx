@@ -15,10 +15,12 @@ import { useNavigation } from '@react-navigation/native'
 import callBottomSheeet from '../components/BottomSheet/callBottomSheeet'
 import PushNotification from 'react-native-push-notification'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { reportEvent, reportNavigate } from '../hooks/yandexMetrica'
 
 interface Props {}
 
 export const Profile = observer(({}: Props) => {
+	reportNavigate('Профиль')
 	const [notify, setNotify] = React.useState(true)
 	const navigation = useNavigation()
 
@@ -43,6 +45,7 @@ export const Profile = observer(({}: Props) => {
 						touchable
 						onPress={() => {
 							callBottomSheeet.ref?.current?.open()
+							reportEvent('Перешел к выбору подписок в профиле')
 						}}
 					>
 						<View style={styles.cardBody}>
@@ -98,9 +101,11 @@ export const Profile = observer(({}: Props) => {
 									if (!notify) {
 										PushNotification.requestPermissions()
 										await AsyncStorage.setItem('notification', 'true')
+										reportEvent(`ВКЛючил отправку уведомлений`)
 									} else {
 										PushNotification.abandonPermissions()
 										await AsyncStorage.setItem('notification', 'false')
+										reportEvent(`ВЫКЛючил отправку уведомлений`)
 									}
 								}}
 								value={notify}

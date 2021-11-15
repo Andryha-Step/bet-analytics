@@ -10,10 +10,12 @@ import Svg, { Path } from 'react-native-svg'
 import { WebView } from 'react-native-webview'
 import { apiHostUri } from '../store/api'
 import SkeletonContent from 'react-native-skeleton-content'
+import { reportNavigate } from '../hooks/yandexMetrica'
 
 interface Props {}
 
 export const Bookmakers = observer(({}: Props) => {
+	reportNavigate('Букмекеры')
 	// const [loading, setLoading] = React.useState(true)
 
 	return (

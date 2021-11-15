@@ -11,25 +11,27 @@ class Products {
 	proSubscribeList: Subscription[] | undefined = undefined
 	liteSubscribeList: Subscription[] | undefined = undefined
 	productList: Product[] | undefined = undefined
-	status: 'FETCHING_PURCHASES' | 'FETCHING_PURCHASES_SUCCESS' = 'FETCHING_PURCHASES'
+	isLoaded: boolean = false
 
 	constructor() {
 		makeAutoObservable(this)
 	}
 
 	async initProductList() {
-		IAP.initConnection()
-			.catch(r => {
-				alert(`INAPPPURCHASES_ERROR: ${r}`)
-			})
+		return await IAP.initConnection()
 			.then(async () => {
 				await IAP.getSubscriptions(fullSubscribeList).then(result => runInAction(() => (this.fullSubscribeList = result)))
 				await IAP.getSubscriptions(proSubscribeList).then(result => runInAction(() => (this.proSubscribeList = result)))
 				await IAP.getSubscriptions(liteSubscribeList).then(result => runInAction(() => (this.liteSubscribeList = result)))
 				await IAP.getProducts(productList).then(result => runInAction(() => (this.productList = result)))
 
-				runInAction(() => (this.status = 'FETCHING_PURCHASES_SUCCESS'))
-				console.log(JSON.stringify(this.liteSubscribeList, null, 2))
+				// console.log(JSON.stringify(this.liteSubscribeList, null, 2))
+			})
+			.then(() => {
+				runInAction(() => (this.isLoaded = true))
+			})
+			.catch(r => {
+				alert(`INAPPPURCHASES_ERROR: ${r}`)
 			})
 	}
 }

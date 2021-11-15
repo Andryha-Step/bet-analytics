@@ -8,10 +8,13 @@ import { runInAction } from 'mobx'
 import API from './src/store/api'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+import { YandexMetrica } from 'react-native-appmetrica-yandex'
+YandexMetrica.activateWithApiKey('945ff86f-e113-46c2-b437-641c0bf091e1')
+
 PushNotification.configure({
 	// (optional) Called when Token is generated (iOS and Android)
 	onRegister: function ({ token }) {
-		console.log('TOKEN:', token)
+		// console.log('TOKEN:', token)
 		runInAction(() => {
 			notification.token = token
 		})

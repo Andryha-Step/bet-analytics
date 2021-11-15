@@ -5415,6 +5415,16 @@ react-is@^17.0.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.2.tgz#e691d4a8e9c789365655539ab372762b0efb54f0"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
 
+react-native-appmetrica-yandex@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/react-native-appmetrica-yandex/-/react-native-appmetrica-yandex-0.5.0.tgz#b937c2dadc4ba20322145c0b23df51509aa9c790"
+  integrity sha512-LzWMwxUPmRO3gI5a/HRXqH/3qpVkWR8xfdxj3aHN3ZJGJxqkaOgnZ82O4HLAYJT53SVGPMi2XiD5DfbNYM/qaw==
+
+react-native-appmetrica@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-appmetrica/-/react-native-appmetrica-2.0.0.tgz#cbb592743975c7162ec7731400ac00da06344c33"
+  integrity sha512-WYr8yRbWrRxtIy05mKJ5KAEI5nBInlSOzuy6lTswh/9VP9wY1AiOOv8iVQ6hCXe7ax+GIyVpLU5xmvGgyZASow==
+
 react-native-calendar-strip@^2.2.4:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/react-native-calendar-strip/-/react-native-calendar-strip-2.2.4.tgz#15bf468b51085a7ae945f309c8eab7eb6453c6e9"
@@ -5430,10 +5440,10 @@ react-native-collapsible@*, react-native-collapsible@^1.6.0:
   resolved "https://registry.yarnpkg.com/react-native-collapsible/-/react-native-collapsible-1.6.0.tgz#ca261ffff16914f872059bb0972e3a78c4b37f9c"
   integrity sha512-beZjdgbT9Y/Pg591Xy5XkKG20HffJiVad4n9bfcUF/f783A+tvOVXnqvbS58Lkaym93mi4jcDPMuW9Vc1t6rqg==
 
-react-native-device-info@^8.3.1:
-  version "8.3.1"
-  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-8.3.1.tgz#f32cbb22a74e51b05b896c03649fcbfd0a0da513"
-  integrity sha512-tEJlyECZeFVZcEJVSZIN8OGghnlrZmSy0J8PGU4mCNk4KMTvx3tHpHMc6c7afl3lS2vOBP3jslzHzRMDgh42cA==
+react-native-device-info@^8.4.7:
+  version "8.4.7"
+  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-8.4.7.tgz#1546232a297e0776dc46c90875055ff65aab891a"
+  integrity sha512-I0z7FfbtxKW5+1wWE7L1bzy0iuiQzgUNVUrvpQoVQSz/BpC9kNIwZokC8O3HpUJDkFVr2Bhd5WO3tISzS7OXxw==
 
 react-native-elements@^3.4.2:
   version "3.4.2"

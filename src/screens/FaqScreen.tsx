@@ -9,10 +9,12 @@ import styled from 'styled-components/native'
 import { useNavigation } from '@react-navigation/native'
 import { FaqAccordion } from '../components/faq/FaqAccordion'
 import faq from '../store/faq'
+import { reportNavigate } from '../hooks/yandexMetrica'
 
 interface Props {}
 
 export const FaqScreen = observer(({}: Props) => {
+	reportNavigate('FAQ')
 	const navigation = useNavigation()
 
 	return (

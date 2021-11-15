@@ -30,6 +30,9 @@ import realtimeBuyProduct from './src/store/realtimeBuyProduct'
 import IAP, { ProductPurchase, PurchaseError, InAppPurchase, SubscriptionPurchase } from 'react-native-iap'
 import notification from './src/store/notification'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import DeviceInfo from 'react-native-device-info'
+import { YandexMetrica } from 'react-native-appmetrica-yandex'
+import { reportEvent } from './src/hooks/yandexMetrica'
 
 // enableScreens()
 
@@ -41,9 +44,12 @@ async function checkUpdates() {
 		Updates.reloadAsync()
 	}
 }
-if (!Constants?.manifest?.packagerOpts?.dev) {
-	checkUpdates()
-}
+
+DeviceInfo.isEmulator().then(isEmulator => {
+	if (!isEmulator) {
+		checkUpdates()
+	}
+})
 
 let purchaseErrorListener
 let purchaseUpdatedListener
@@ -102,7 +108,7 @@ const App = observer(() => {
 					news.getNews()
 					faq.getFaq()
 
-					console.log('API_NOTIFICATION_TOKEN:', notification.token)
+					// console.log('API_NOTIFICATION_TOKEN:', notification.token)
 					const data = new FormData()
 					data.append('firebase_token', notification.token || '')
 
@@ -117,6 +123,7 @@ const App = observer(() => {
 	}
 
 	React.useEffect(() => {
+		// YandexMetrica.reportEvent('Открыл приложение')
 		getData()
 		products.initProductList().then(() => {
 			IAP.flushFailedPurchasesCachedAsPendingAndroid()
@@ -128,8 +135,8 @@ const App = observer(() => {
 				.then(() => {
 					purchaseUpdatedListener = IAP.purchaseUpdatedListener((purchase: InAppPurchase | SubscriptionPurchase | ProductPurchase) => {
 						const isProduct = purchase.productId === 'pro_forecast' || purchase.productId === 'lite_forecast'
-						console.log('IS_PRODUCT', isProduct)
-						console.log('purchaseUpdatedListener', JSON.stringify(purchase, null, 2))
+						// console.log('IS_PRODUCT', isProduct)
+						// console.log('purchaseUpdatedListener', JSON.stringify(purchase, null, 2))
 						// alert(JSON.stringify(purchase, null, 2))
 						const receipt = purchase.transactionReceipt
 						const data = new FormData()
@@ -169,6 +176,7 @@ const App = observer(() => {
 								?.post('/api/app/set-inapp-purchase', data)
 								.then(async () => {
 									await IAP.finishTransaction(purchase, isProduct)
+									reportEvent(`Успешно оформил покупку "${purchase.productId}"`)
 									getData()
 									callBottomSheeet.ref?.current?.close()
 									callBottomSheeet.buyRef?.current?.close()
@@ -180,7 +188,8 @@ const App = observer(() => {
 					})
 
 					purchaseErrorListener = IAP.purchaseErrorListener((error: PurchaseError) => {
-						console.log('purchaseErrorListener', error)
+						// console.log('purchaseErrorListener', error)
+						reportEvent(`[InAppPurchases] Отмена покупки по причине: "${error.message}". Код ответа: "${error.responseCode}".`)
 						alert(error.message)
 					})
 				})
@@ -231,24 +240,30 @@ const App = observer(() => {
 		// })
 	}, [])
 
-	if (!fontsLoaded) return <></>
+	if (!fontsLoaded && !products.isLoaded) return <></>
 
 	return (
 		<SafeAreaProvider style={{ backgroundColor: colors.background }}>
-			<BottomSheet>
-				<SubscribePlan />
-			</BottomSheet>
-			<BottomSheet buy>
-				<OneBuy />
-			</BottomSheet>
-			<BottomSheet locked>
-				<LockedBuy />
-			</BottomSheet>
-			<BottomSheet connection>
-				<NoConnection />
-			</BottomSheet>
-			{forecasts.sports && settings.settings ? <Navigation /> : null}
-			<Splash />
+			{forecasts.sports && settings.settings && products.isLoaded ? (
+				<>
+					<BottomSheet>
+						<SubscribePlan />
+					</BottomSheet>
+					<BottomSheet buy>
+						<OneBuy />
+					</BottomSheet>
+					<BottomSheet locked>
+						<LockedBuy />
+					</BottomSheet>
+					<BottomSheet connection>
+						<NoConnection />
+					</BottomSheet>
+
+					<Navigation />
+				</>
+			) : (
+				<Splash />
+			)}
 		</SafeAreaProvider>
 	)
 })

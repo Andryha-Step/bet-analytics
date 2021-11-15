@@ -11,6 +11,7 @@ import callBottomSheeet from './BottomSheet/callBottomSheeet'
 import { runInAction } from 'mobx'
 import realtimeBuyProduct from '../store/realtimeBuyProduct'
 import products from '../store/products'
+import { reportPastForecast } from '../hooks/yandexMetrica'
 
 interface Props {
 	forecast: LockedDaum
@@ -30,6 +31,11 @@ export const LockedForecastCard = observer(({ forecast }: Props) => {
 			activeOpacity={1}
 			onPress={() => {
 				if (moment().diff(forecast.released_at) > 0) {
+					reportPastForecast(
+						JSON.stringify({
+							id: forecast.id,
+						})
+					)
 					callBottomSheeet.lockedRef?.current?.open()
 					return
 				}
@@ -83,9 +89,17 @@ export const LockedForecastCard = observer(({ forecast }: Props) => {
 					<LockSvg />
 					{products.productList?.map(product => {
 						if (forecast.subscribe_type === 'pro' && product.productId === 'pro_forecast')
-							return <Price key={product.productId}>{product.price} RUB</Price>
+							return (
+								<Price key={product.productId}>
+									{product.price} {product.currency}
+								</Price>
+							)
 						if (forecast.subscribe_type === 'lite' && product.productId === 'lite_forecast')
-							return <Price key={product.productId}>{product.price} RUB</Price>
+							return (
+								<Price key={product.productId}>
+									{product.price} {product.currency}
+								</Price>
+							)
 						return <React.Fragment key={product.productId}></React.Fragment>
 					})}
 

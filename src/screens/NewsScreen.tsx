@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import moment from 'moment'
 import { SkeletonImage } from '../components/SkeletonImage'
+import { reportNews } from '../hooks/yandexMetrica'
 
 interface Props {
 	route: {
@@ -23,6 +24,12 @@ interface Props {
 export const NewsScreen = observer(({ route }: Props) => {
 	const navigation = useNavigation()
 	const { data } = route.params
+	reportNews(
+		JSON.stringify({
+			id: data.id,
+			title: data.title,
+		})
+	)
 
 	const getDate = () => {
 		const date = moment(data.created_at).format('LL')

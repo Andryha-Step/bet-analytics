@@ -11,10 +11,12 @@ import { RefreshControl, View } from 'react-native'
 import colors from '../../constants/colors'
 import NetInfo from '@react-native-community/netinfo'
 import callBottomSheeet from '../../components/BottomSheet/callBottomSheeet'
+import { reportNavigate } from '../../hooks/yandexMetrica'
 
 interface Props {}
 
 export const Right = observer(({}: Props) => {
+	reportNavigate('Лента > Завершенные')
 	// React.useEffect(() => {
 	// 	forecasts.getArchive()
 	// }, [])

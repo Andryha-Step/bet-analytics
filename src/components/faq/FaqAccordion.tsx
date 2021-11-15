@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import Accordion from 'react-native-collapsible/Accordion'
 import Svg, { Path } from 'react-native-svg'
 import { FaqData } from '../../store/faq'
+import { reportEvent } from '../../hooks/yandexMetrica'
 
 interface Props {
 	data: FaqData
@@ -12,6 +13,14 @@ interface Props {
 
 export const FaqAccordion = observer(({ data }: Props) => {
 	const [show, setShow] = React.useState(false)
+
+	React.useEffect(() => {
+		if (show) {
+			reportEvent(`Развернул описание "FAQ > ${data.question}"`)
+		} else {
+			reportEvent(`Свернул описание "FAQ > ${data.question}"`)
+		}
+	}, [show])
 
 	return (
 		<View style={styles.container}>

@@ -7,10 +7,16 @@ import callBottomSheeet from './BottomSheet/callBottomSheeet'
 import realtimeBuyProduct from '../store/realtimeBuyProduct'
 import products from '../store/products'
 import IAP from 'react-native-iap'
+import { reportEvent, reportPaidForecast } from '../hooks/yandexMetrica'
 
 interface Props {}
 
 export const OneBuy = observer(({}: Props) => {
+	reportPaidForecast(
+		JSON.stringify({
+			id: realtimeBuyProduct.id,
+		})
+	)
 	return (
 		<View style={styles.container}>
 			<Image style={styles.bgImage} resizeMode="stretch" source={require('../icons/arrow.png')} />
@@ -21,8 +27,13 @@ export const OneBuy = observer(({}: Props) => {
 				<ProfileCard
 					touchable
 					onPress={() => {
-						console.log('#' + realtimeBuyProduct.id, realtimeBuyProduct.type)
+						// console.log('#' + realtimeBuyProduct.id, realtimeBuyProduct.type)
 						if (typeof realtimeBuyProduct.type === 'string') {
+							reportEvent(
+								`Оформляет разовую покупку прогноза ${JSON.stringify({
+									id: realtimeBuyProduct.id,
+								})}`
+							)
 							IAP.requestPurchase(realtimeBuyProduct.type)
 						} else {
 							alert('Что-то пошло не так')
@@ -33,10 +44,11 @@ export const OneBuy = observer(({}: Props) => {
 						<View>
 							<Text style={styles.title}>Единоразовая покупка</Text>
 							{products.productList?.map(product => {
+								// console.log('product', product)
 								if (product.productId === realtimeBuyProduct.type)
 									return (
 										<Text key={product.productId} style={styles.description}>
-											{product.price} RUB
+											{product.price} {product.currency}
 										</Text>
 									)
 								return <React.Fragment key={product.productId}></React.Fragment>
@@ -51,6 +63,11 @@ export const OneBuy = observer(({}: Props) => {
 					blue
 					onPress={() => {
 						callBottomSheeet.ref?.current?.open()
+						reportEvent(
+							`Перешел к выбору подписок по карточке платного прогноза ${JSON.stringify({
+								id: realtimeBuyProduct.id,
+							})}`
+						)
 					}}
 				>
 					<View style={styles.cardBody}>
@@ -61,7 +78,7 @@ export const OneBuy = observer(({}: Props) => {
 										if (subscribe.subscriptionPeriodAndroid === 'P1W')
 											return (
 												<Text key={subscribe.price} style={styles.bluePrice}>
-													от {subscribe.price} RUB/нед
+													от {subscribe.price} {subscribe.currency}/нед
 												</Text>
 											)
 										return <React.Fragment key={subscribe.productId}></React.Fragment>
@@ -73,7 +90,7 @@ export const OneBuy = observer(({}: Props) => {
 										if (subscribe.subscriptionPeriodAndroid === 'P1W')
 											return (
 												<Text key={subscribe.price} style={styles.bluePrice}>
-													от {subscribe.price} RUB/нед
+													от {subscribe.price} {subscribe.currency}/нед
 												</Text>
 											)
 										return <React.Fragment key={subscribe.productId}></React.Fragment>

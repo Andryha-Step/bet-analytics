@@ -9,14 +9,17 @@ import { RefreshControl } from 'react-native'
 import NetInfo from '@react-native-community/netinfo'
 import callBottomSheeet from '../../components/BottomSheet/callBottomSheeet'
 import settings from '../../store/settings'
+import { reportNavigate } from '../../hooks/yandexMetrica'
 
 interface Props {}
 
 export const Left = observer(({}: Props) => {
-	console.log('SUBSCRIBE_TYPE:', settings.settings?.subscribe)
+	reportNavigate('Лента > Текущие')
+	// console.log('SUBSCRIBE_TYPE:', settings.settings?.subscribe)
 	// React.useEffect(() => {
 	// 	forecasts.getForecasts()
 	// }, [])
+
 	const [refreshing, setRefreshing] = React.useState(false)
 	const refreshHandler = () => {
 		setRefreshing(true)
@@ -36,6 +39,11 @@ export const Left = observer(({}: Props) => {
 			})
 			.catch(e => e)
 	}
+
+	// const isFocused = useIsFocused()
+	// React.useEffect(() => {
+	// 	console.log(isFocused)
+	// })
 
 	return (
 		<ScrollView

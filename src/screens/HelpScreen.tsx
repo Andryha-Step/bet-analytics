@@ -7,13 +7,14 @@ import colors from '../constants/colors'
 import { ScreenHeader } from '../components/ScreenHeader'
 import Svg, { Path } from 'react-native-svg'
 import styled from 'styled-components/native'
-import { apiHostUri } from '../store/api'
+import { apiHostUri, deviceId } from '../store/api'
 import WebView from 'react-native-webview'
-import Constants from 'expo-constants'
+import { reportNavigate } from '../hooks/yandexMetrica'
 
 interface Props {}
 
 export const HelpScreen = observer(({}: Props) => {
+	reportNavigate('Поддержка')
 	const navigation = useNavigation()
 	const [load, setLoad] = React.useState(true)
 
@@ -31,7 +32,7 @@ export const HelpScreen = observer(({}: Props) => {
 				<WebView
 					onLoad={() => setLoad(false)}
 					style={{ flex: 1, backgroundColor: colors.background, opacity: Number(!load) }}
-					source={{ uri: apiHostUri + '/chat/' + Constants.deviceId }}
+					source={{ uri: apiHostUri + '/chat/' + deviceId }}
 				/>
 			</Container>
 		</SafeAreaView>

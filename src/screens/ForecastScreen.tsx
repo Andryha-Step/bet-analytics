@@ -12,6 +12,7 @@ import moment from 'moment'
 import { ProgressBar } from 'react-native-paper'
 import { Dimensions, ScrollView, ToastAndroid, View } from 'react-native'
 import Accordion from 'react-native-collapsible/Accordion'
+import { reportCompletedForecast, reportForecast, reportPastForecast, reportWaitingForecast } from '../hooks/yandexMetrica'
 
 interface Props {
 	route: {
@@ -118,20 +119,31 @@ const DefaultForecast = ({ route }: Props) => {
 					<TimerView>
 						{!forecast.status ? (
 							<>
-								{moment().diff(forecast.released_at) < 0 ? (
-									<>
-										<Time timestamp={forecast.released_at} subscribeType={forecast.subscribe_type} />
-										<TimerDesc>начало через</TimerDesc>
-									</>
-								) : (
-									<TimerDesc>Ожидает{'\n'}результатов</TimerDesc>
-								)}
+								{moment().diff(forecast.released_at) < 0
+									? (() => {
+											reportForecast(JSON.stringify({ id: forecast.id }))
+											return (
+												<>
+													<Time timestamp={forecast.released_at} subscribeType={forecast.subscribe_type} />
+													<TimerDesc>начало через</TimerDesc>
+												</>
+											)
+									  })()
+									: (() => {
+											reportWaitingForecast(JSON.stringify({ id: forecast.id }))
+											return <TimerDesc>Ожидает{'\n'}результатов</TimerDesc>
+									  })()}
 							</>
 						) : (
-							<>
-								<EndTimeIndicator color={colors.card[forecast.status]} />
-								<EndTimeTitle>{getStatusText()}</EndTimeTitle>
-							</>
+							(() => {
+								reportCompletedForecast(JSON.stringify({ id: forecast.id }))
+								return (
+									<>
+										<EndTimeIndicator color={colors.card[forecast.status]} />
+										<EndTimeTitle>{getStatusText()}</EndTimeTitle>
+									</>
+								)
+							})()
 						)}
 					</TimerView>
 					<DefaultCommandView style={{ alignItems: 'flex-end' }}>
@@ -661,10 +673,15 @@ const ExpressHeader = ({ route }: Props) => {
 					</ExpressHeaderViewTimer>
 				</>
 			) : (
-				<ExpressEndView>
-					<ExpressEndIndicator color={colors.card[forecast.status]} />
-					<ExpressEndTitle>{getStatusText()}</ExpressEndTitle>
-				</ExpressEndView>
+				(() => {
+					reportCompletedForecast(JSON.stringify({ id: forecast.id }))
+					return (
+						<ExpressEndView>
+							<ExpressEndIndicator color={colors.card[forecast.status]} />
+							<ExpressEndTitle>{getStatusText()}</ExpressEndTitle>
+						</ExpressEndView>
+					)
+				})()
 			)}
 		</ExpressHeaderView>
 	)

@@ -1,11 +1,11 @@
 import { ApisauceInstance, create } from 'apisauce'
 import { makeAutoObservable, runInAction } from 'mobx'
 import axios from 'axios'
-import Constants from 'expo-constants'
+import DeviceInfo from 'react-native-device-info'
 
 export const apiHostUri = 'http://89.223.71.72'
-
-console.log(Constants.deviceId)
+export const deviceId = DeviceInfo.getUniqueId()
+console.log('deviceId', deviceId)
 
 class API {
 	request: ApisauceInstance | undefined = undefined
@@ -18,7 +18,7 @@ class API {
 	async login() {
 		await axios
 			.post(apiHostUri + '/api/app/login', {
-				device_id: Constants.deviceId,
+				device_id: deviceId,
 			})
 			.then(response => {
 				runInAction(() => {

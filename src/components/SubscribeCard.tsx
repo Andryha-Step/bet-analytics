@@ -8,6 +8,7 @@ import onloadapp from '../store/onloadapp'
 import callBottomSheeet from './BottomSheet/callBottomSheeet'
 import realtimeBuyProduct from '../store/realtimeBuyProduct'
 import { runInAction } from 'mobx'
+import { reportEvent } from '../hooks/yandexMetrica'
 
 interface Props {
 	headerType?: ''
@@ -19,6 +20,7 @@ export const SubscribeCard = observer(({}: Props) => {
 			activeOpacity={1}
 			onPress={() => {
 				callBottomSheeet.ref?.current?.open()
+				reportEvent('Перешел к выбору подписок по желтой карточке на глвной ленте')
 			}}
 		>
 			<CapContainer>
