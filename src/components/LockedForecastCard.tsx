@@ -12,6 +12,7 @@ import { runInAction } from 'mobx'
 import realtimeBuyProduct from '../store/realtimeBuyProduct'
 import products from '../store/products'
 import { reportPastForecast } from '../hooks/yandexMetrica'
+import { floatToStringPrice } from '../hooks/floatToStringPrice'
 
 interface Props {
 	forecast: LockedDaum
@@ -31,11 +32,7 @@ export const LockedForecastCard = observer(({ forecast }: Props) => {
 			activeOpacity={1}
 			onPress={() => {
 				if (moment().diff(forecast.released_at) > 0) {
-					reportPastForecast(
-						JSON.stringify({
-							id: forecast.id,
-						})
-					)
+					reportPastForecast(forecast.id)
 					callBottomSheeet.lockedRef?.current?.open()
 					return
 				}
@@ -88,16 +85,18 @@ export const LockedForecastCard = observer(({ forecast }: Props) => {
 				<PriceView>
 					<LockSvg />
 					{products.productList?.map(product => {
-						if (forecast.subscribe_type === 'pro' && product.productId === 'pro_forecast')
+						if (forecast.subscribe_type === 'pro' && product.productId === 'pro_forecast') {
+							console.log(JSON.stringify(product, null, 2))
 							return (
 								<Price key={product.productId}>
-									{product.price} {product.currency}
+									{floatToStringPrice(product.price)} {product.currency}
 								</Price>
 							)
+						}
 						if (forecast.subscribe_type === 'lite' && product.productId === 'lite_forecast')
 							return (
 								<Price key={product.productId}>
-									{product.price} {product.currency}
+									{floatToStringPrice(product.price)} {product.currency}
 								</Price>
 							)
 						return <React.Fragment key={product.productId}></React.Fragment>

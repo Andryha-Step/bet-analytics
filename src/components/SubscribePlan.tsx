@@ -7,6 +7,7 @@ import products from '../store/products'
 import moment from 'moment'
 import IAP from 'react-native-iap'
 import { reportEvent } from '../hooks/yandexMetrica'
+import { floatToStringPrice } from '../hooks/floatToStringPrice'
 
 interface Props {}
 
@@ -45,32 +46,41 @@ const Plan = ({ type, goBack }: Plan) => {
 		reportEvent(`Выбрал тип подписки "${type.toUpperCase()}"`)
 		if (type === 'lite')
 			setPeriod(
-				products.liteSubscribeList?.map((product, index) => ({
-					id: product.productId,
-					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} ${product.currency}`,
-					desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
-					selected: false,
-				})) || []
+				products.liteSubscribeList?.map((product, index) => {
+					if (product.subscriptionPeriodAndroid === 'P1M') setSelectedPeriod(product.productId)
+					return {
+						id: product.productId,
+						title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${floatToStringPrice(product.price)} ${product.currency}`,
+						desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
+						selected: product.subscriptionPeriodAndroid === 'P1M',
+					}
+				}) || []
 			)
 
 		if (type === 'pro')
 			setPeriod(
-				products.proSubscribeList?.map((product, index) => ({
-					id: product.productId,
-					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} ${product.currency}`,
-					desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
-					selected: false,
-				})) || []
+				products.proSubscribeList?.map((product, index) => {
+					if (product.subscriptionPeriodAndroid === 'P1M') setSelectedPeriod(product.productId)
+					return {
+						id: product.productId,
+						title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${floatToStringPrice(product.price)} ${product.currency}`,
+						desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
+						selected: product.subscriptionPeriodAndroid === 'P1M',
+					}
+				}) || []
 			)
 
 		if (type === 'full')
 			setPeriod(
-				products.fullSubscribeList?.map((product, index) => ({
-					id: product.productId,
-					title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${product.price} ${product.currency}`,
-					desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
-					selected: false,
-				})) || []
+				products.fullSubscribeList?.map((product, index) => {
+					if (product.subscriptionPeriodAndroid === 'P1M') setSelectedPeriod(product.productId)
+					return {
+						id: product.productId,
+						title: `${getTitlePeriod(product.subscriptionPeriodAndroid)} - ${floatToStringPrice(product.price)} ${product.currency}`,
+						desc: `До ${getDisplayPeriod(product.subscriptionPeriodAndroid)}`,
+						selected: product.subscriptionPeriodAndroid === 'P1M',
+					}
+				}) || []
 			)
 	}, [])
 
@@ -121,7 +131,7 @@ const Plan = ({ type, goBack }: Plan) => {
 
 	const buyPurchaseHandler = () => {
 		if (selectedPeriod) {
-			reportEvent(`Оформляет подписку "${selectedPeriod}""`)
+			reportEvent(`Оформляет подписку "${selectedPeriod}"`)
 			IAP.requestSubscription(selectedPeriod)
 			return
 		}
@@ -140,7 +150,7 @@ const Plan = ({ type, goBack }: Plan) => {
 				</View>
 				<ProfileCard>
 					<Text style={styles.title}>LITE</Text>
-					<Text style={styles.description}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Eget ultrices eu elementum.</Text>
+					<Text style={styles.description}>7 дней прогнозов с КЭФ 1.4-2.0! Проходимость более 87%!</Text>
 				</ProfileCard>
 				<Text style={[styles.description, { marginBottom: 8, marginTop: 16 }]}>Выберите период</Text>
 				{period.map(({ id, title, desc, selected }) => {
@@ -163,7 +173,9 @@ const Plan = ({ type, goBack }: Plan) => {
 				</View>
 				<ProfileCard>
 					<Text style={styles.title}>PRO</Text>
-					<Text style={styles.description}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Eget ultrices eu elementum.</Text>
+					<Text style={styles.description}>
+						Более 20 высокопроходимых прогнозов с КЭФ 3.0+ Бонус - каждый день гарантированный экспресс!
+					</Text>
 				</ProfileCard>
 				<Text style={[styles.description, { marginBottom: 8, marginTop: 16 }]}>Выберите период</Text>
 				{period.map(({ id, title, desc, selected }) => {
@@ -186,7 +198,7 @@ const Plan = ({ type, goBack }: Plan) => {
 				</View>
 				<ProfileCard>
 					<Text style={styles.title}>FULL</Text>
-					<Text style={styles.description}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Eget ultrices eu elementum.</Text>
+					<Text style={styles.description}>Полный доступ ко всем прогнозам! +300% к банку!</Text>
 				</ProfileCard>
 				<Text style={[styles.description, { marginBottom: 8, marginTop: 16 }]}>Выберите период</Text>
 				{period.map(({ id, title, desc, selected }) => {
@@ -235,15 +247,15 @@ const PlanList = ({ selectPlan }: IPlanList) => {
 			</View>
 			<ProfileCard touchable onPress={() => selectPlan(1)}>
 				<Text style={styles.title}>LITE</Text>
-				<Text style={styles.description}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Eget ultrices eu elementum.</Text>
+				<Text style={styles.description}>7 дней прогнозов с КЭФ 1.4-2.0! Проходимость более 87%!</Text>
 			</ProfileCard>
 			<ProfileCard touchable onPress={() => selectPlan(2)}>
 				<Text style={styles.title}>PRO</Text>
-				<Text style={styles.description}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Eget ultrices eu elementum.</Text>
+				<Text style={styles.description}>Более 20 высокопроходимых прогнозов с КЭФ 3.0+ Бонус - каждый день гарантированный экспресс!</Text>
 			</ProfileCard>
 			<ProfileCard touchable onPress={() => selectPlan(3)}>
 				<Text style={styles.title}>FULL</Text>
-				<Text style={styles.description}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Eget ultrices eu elementum.</Text>
+				<Text style={styles.description}>Полный доступ ко всем прогнозам! +300% к банку!</Text>
 			</ProfileCard>
 		</>
 	)

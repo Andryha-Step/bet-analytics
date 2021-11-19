@@ -8,15 +8,12 @@ import realtimeBuyProduct from '../store/realtimeBuyProduct'
 import products from '../store/products'
 import IAP from 'react-native-iap'
 import { reportEvent, reportPaidForecast } from '../hooks/yandexMetrica'
+import { floatToStringPrice } from '../hooks/floatToStringPrice'
 
 interface Props {}
 
 export const OneBuy = observer(({}: Props) => {
-	reportPaidForecast(
-		JSON.stringify({
-			id: realtimeBuyProduct.id,
-		})
-	)
+	reportPaidForecast(realtimeBuyProduct.id)
 	return (
 		<View style={styles.container}>
 			<Image style={styles.bgImage} resizeMode="stretch" source={require('../icons/arrow.png')} />
@@ -48,7 +45,7 @@ export const OneBuy = observer(({}: Props) => {
 								if (product.productId === realtimeBuyProduct.type)
 									return (
 										<Text key={product.productId} style={styles.description}>
-											{product.price} {product.currency}
+											{floatToStringPrice(product.price)} {product.currency}
 										</Text>
 									)
 								return <React.Fragment key={product.productId}></React.Fragment>
@@ -78,7 +75,7 @@ export const OneBuy = observer(({}: Props) => {
 										if (subscribe.subscriptionPeriodAndroid === 'P1W')
 											return (
 												<Text key={subscribe.price} style={styles.bluePrice}>
-													от {subscribe.price} {subscribe.currency}/нед
+													от {floatToStringPrice(subscribe.price)} {subscribe.currency}/нед
 												</Text>
 											)
 										return <React.Fragment key={subscribe.productId}></React.Fragment>
@@ -90,7 +87,7 @@ export const OneBuy = observer(({}: Props) => {
 										if (subscribe.subscriptionPeriodAndroid === 'P1W')
 											return (
 												<Text key={subscribe.price} style={styles.bluePrice}>
-													от {subscribe.price} {subscribe.currency}/нед
+													от {floatToStringPrice(subscribe.price)} {subscribe.currency}/нед
 												</Text>
 											)
 										return <React.Fragment key={subscribe.productId}></React.Fragment>

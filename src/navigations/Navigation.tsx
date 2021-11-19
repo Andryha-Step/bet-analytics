@@ -91,7 +91,7 @@ const HomeNav = () => {
 			) : null}
 			{settings.settings?.rating ? (
 				<Tab.Screen
-					name="Букмекеры"
+					name="Бонусы"
 					options={{
 						tabBarIcon: props => {
 							if (props.focused) return <Icon source={require('../icons/navigations/bookmakers-active.png')} />

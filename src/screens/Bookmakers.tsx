@@ -15,7 +15,7 @@ import { reportNavigate } from '../hooks/yandexMetrica'
 interface Props {}
 
 export const Bookmakers = observer(({}: Props) => {
-	reportNavigate('Букмекеры')
+	reportNavigate('Бонусы')
 	// const [loading, setLoading] = React.useState(true)
 
 	return (

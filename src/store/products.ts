@@ -12,6 +12,7 @@ class Products {
 	liteSubscribeList: Subscription[] | undefined = undefined
 	productList: Product[] | undefined = undefined
 	isLoaded: boolean = false
+	initialCurrency: string = ''
 
 	constructor() {
 		makeAutoObservable(this)
@@ -20,10 +21,21 @@ class Products {
 	async initProductList() {
 		return await IAP.initConnection()
 			.then(async () => {
-				await IAP.getSubscriptions(fullSubscribeList).then(result => runInAction(() => (this.fullSubscribeList = result)))
-				await IAP.getSubscriptions(proSubscribeList).then(result => runInAction(() => (this.proSubscribeList = result)))
-				await IAP.getSubscriptions(liteSubscribeList).then(result => runInAction(() => (this.liteSubscribeList = result)))
-				await IAP.getProducts(productList).then(result => runInAction(() => (this.productList = result)))
+				await IAP.getSubscriptions(fullSubscribeList).then(result =>
+					runInAction(() => (this.fullSubscribeList = this.sortSubscribtions(result)))
+				)
+				await IAP.getSubscriptions(proSubscribeList).then(result =>
+					runInAction(() => (this.proSubscribeList = this.sortSubscribtions(result)))
+				)
+				await IAP.getSubscriptions(liteSubscribeList).then(result =>
+					runInAction(() => (this.liteSubscribeList = this.sortSubscribtions(result)))
+				)
+				await IAP.getProducts(productList).then(result =>
+					runInAction(() => {
+						this.productList = result
+						this.initialCurrency = result.length ? result[0].currency : ''
+					})
+				)
 
 				// console.log(JSON.stringify(this.liteSubscribeList, null, 2))
 			})
@@ -33,6 +45,20 @@ class Products {
 			.catch(r => {
 				alert(`INAPPPURCHASES_ERROR: ${r}`)
 			})
+	}
+
+	sortSubscribtions(data: Subscription[]): Subscription[] {
+		const sortList: Subscription[] = []
+
+		data.forEach(subscribtion => {
+			if (subscribtion.subscriptionPeriodAndroid === 'P1W') return (sortList[0] = subscribtion)
+			if (subscribtion.subscriptionPeriodAndroid === 'P1M') return (sortList[1] = subscribtion)
+			if (subscribtion.subscriptionPeriodAndroid === 'P1Y') return (sortList[2] = subscribtion)
+			sortList.push(subscribtion)
+		})
+
+		console.log('SORT_LIST', JSON.stringify(sortList, null, 2))
+		return sortList
 	}
 }
 

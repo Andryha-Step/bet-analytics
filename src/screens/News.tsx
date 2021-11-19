@@ -10,12 +10,12 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import { RefreshControl, View } from 'react-native'
 import NetInfo from '@react-native-community/netinfo'
 import callBottomSheeet from '../components/BottomSheet/callBottomSheeet'
-import { reportNavigate } from '../hooks/yandexMetrica'
+import { reportOpenNews } from '../hooks/yandexMetrica'
 
 interface Props {}
 
 export const News = observer(({}: Props) => {
-	reportNavigate('Новости')
+	reportOpenNews()
 	const [refreshing, setRefreshing] = React.useState(false)
 	const refreshHandler = () => {
 		setRefreshing(true)

@@ -32,11 +32,7 @@ export const ForecastCard = observer(({ forecast }: Props) => {
 				activeOpacity={1}
 				onPress={() => {
 					if (moment().diff(forecast.released_at) > 0 && forecast.subscribe_type !== 'free') {
-						reportPastForecast(
-							JSON.stringify({
-								id: forecast.id,
-							})
-						)
+						reportPastForecast(forecast.id)
 						callBottomSheeet.lockedRef?.current?.open()
 						return
 					}

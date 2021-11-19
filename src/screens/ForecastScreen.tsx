@@ -121,7 +121,7 @@ const DefaultForecast = ({ route }: Props) => {
 							<>
 								{moment().diff(forecast.released_at) < 0
 									? (() => {
-											reportForecast(JSON.stringify({ id: forecast.id }))
+											reportForecast(forecast.id)
 											return (
 												<>
 													<Time timestamp={forecast.released_at} subscribeType={forecast.subscribe_type} />
@@ -130,13 +130,14 @@ const DefaultForecast = ({ route }: Props) => {
 											)
 									  })()
 									: (() => {
-											reportWaitingForecast(JSON.stringify({ id: forecast.id }))
+											reportWaitingForecast(forecast.id)
 											return <TimerDesc>Ожидает{'\n'}результатов</TimerDesc>
 									  })()}
 							</>
 						) : (
 							(() => {
-								reportCompletedForecast(JSON.stringify({ id: forecast.id }))
+								// reportCompletedForecast(JSON.stringify({ id: forecast.id }))
+								reportCompletedForecast(forecast.id)
 								return (
 									<>
 										<EndTimeIndicator color={colors.card[forecast.status]} />
@@ -674,7 +675,7 @@ const ExpressHeader = ({ route }: Props) => {
 				</>
 			) : (
 				(() => {
-					reportCompletedForecast(JSON.stringify({ id: forecast.id }))
+					reportCompletedForecast(forecast.id)
 					return (
 						<ExpressEndView>
 							<ExpressEndIndicator color={colors.card[forecast.status]} />

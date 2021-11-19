@@ -24,12 +24,7 @@ interface Props {
 export const NewsScreen = observer(({ route }: Props) => {
 	const navigation = useNavigation()
 	const { data } = route.params
-	reportNews(
-		JSON.stringify({
-			id: data.id,
-			title: data.title,
-		})
-	)
+	reportNews(data.id)
 
 	const getDate = () => {
 		const date = moment(data.created_at).format('LL')

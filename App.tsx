@@ -33,6 +33,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
 import { YandexMetrica } from 'react-native-appmetrica-yandex'
 import { reportEvent } from './src/hooks/yandexMetrica'
+import moment from 'moment'
 
 // enableScreens()
 
@@ -140,6 +141,7 @@ const App = observer(() => {
 						// alert(JSON.stringify(purchase, null, 2))
 						const receipt = purchase.transactionReceipt
 						const data = new FormData()
+
 						isProduct
 							? data.append(
 									'purchases',
@@ -176,7 +178,24 @@ const App = observer(() => {
 								?.post('/api/app/set-inapp-purchase', data)
 								.then(async () => {
 									await IAP.finishTransaction(purchase, isProduct)
-									reportEvent(`Успешно оформил покупку "${purchase.productId}"`)
+									if (isProduct) {
+										reportEvent('purchase', {
+											currency: products.initialCurrency ?? 'unknown', // (валюта) - сюда летят валюты покупок
+											forecastId: realtimeBuyProduct.id, // (id купленного прогноза)
+											orderId: purchase.transactionId, // (id чека из гугла в формате GPA.3313-2207-8275-16032)
+											productName: purchase.productId, // (имя тарифа, в который входит прогноз - lite или pro)
+											purchaseDate: moment(purchase.transactionDate).format(), // (дата и время покупки в формате: 2021-11-10 22:41 - UTC)
+											purchaseToken: purchase.purchaseToken, // (сюда выводим токен покупки от гугл плей) - поможет в поисках проблем с платежами.
+										})
+									} else {
+										reportEvent('sibscription', {
+											currency: products.initialCurrency ?? 'unknown', // (валюта) - сюда летят валюты покупок
+											orderId: purchase.transactionId, // (id чека из гугла в формате GPA.3313-2207-8275-16032)
+											productName: purchase.productId, // (имя тарифа подписки - lite или pro или full)
+											purchaseDate: moment(purchase.transactionDate).format(), // (дата и время покупки в формате: 2021-11-10 22:41 - UTC)
+											purchaseToken: purchase.purchaseToken, // (сюда выводим токен покупки от гугл плей) - поможет в поисках проблем с платежами.
+										})
+									}
 									getData()
 									callBottomSheeet.ref?.current?.close()
 									callBottomSheeet.buyRef?.current?.close()
